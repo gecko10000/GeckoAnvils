@@ -1,0 +1,7 @@
+betteranvils {
+    reload {
+        help Reload the configs
+        hook reload
+        permission betteranvils.reload
+    }
+}
