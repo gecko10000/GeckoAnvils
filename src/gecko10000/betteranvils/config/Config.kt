@@ -11,5 +11,7 @@ import net.kyori.adventure.text.Component
 @Serializable
 data class Config(
     val homeAnvilName: Component = MM.deserialize("<dark_gray>Anvil"),
-    val enchantmentAnvilName: Component = MM.deserialize("<dark_purple>Enchantments")
+    val enchantmentAnvilName: Component = MM.deserialize("<dark_purple>Enchantments"),
+    val itemRepairName: Component = MM.deserialize("<dark_green>Item Repair"),
+    val repairStartName: Component = MM.deserialize("<gold>Start Repair"),
 )

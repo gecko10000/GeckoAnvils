@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PlayerRepairs(
-    val currentRepairs: List<RepairInfo>,
+    val currentRepairs: List<RepairInfo?>,
 )
