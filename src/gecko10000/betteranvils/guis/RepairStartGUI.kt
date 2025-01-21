@@ -2,13 +2,11 @@ package gecko10000.betteranvils.guis
 
 import gecko10000.betteranvils.BetterAnvils
 import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.geckolib.GUI
 import gecko10000.geckolib.extensions.MM
 import gecko10000.geckolib.extensions.parseMM
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -17,7 +15,7 @@ import redempt.redlib.inventorygui.InventoryGUI
 import kotlin.math.max
 import kotlin.time.Duration
 
-class RepairStartGUI(player: Player, private val block: Block) : MyKoinComponent, GUI(player) {
+class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
 
     companion object {
         private const val SIZE = 27
@@ -29,13 +27,13 @@ class RepairStartGUI(player: Player, private val block: Block) : MyKoinComponent
 
     private val plugin: BetterAnvils by inject()
 
+    private var itemToRepair: ItemStack?
+        get() = inventory.inventory.getItem(DAMAGED_ITEM_SLOT)
+        set(value) = inventory.inventory.setItem(DAMAGED_ITEM_SLOT, value)
+    private var sacrificedItem: ItemStack?
+        get() = inventory.inventory.getItem(REPAIR_ITEM_SLOT)
+        set(value) = inventory.inventory.setItem(REPAIR_ITEM_SLOT, value)
     private var duration: Duration? = null
-
-    init {
-        if (!Tag.ANVIL.isTagged(block.type)) {
-            shouldOpen = false
-        }
-    }
 
     private fun durationToString(duration: Duration): String {
         val durationString = StringBuilder()

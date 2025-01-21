@@ -12,7 +12,7 @@ class CommandHandler : MyKoinComponent {
     private val plugin: BetterAnvils by inject()
 
     init {
-        CommandParser(plugin.getResource("command.rdcml"))
+        CommandParser(plugin.getResource("command.rdcml")).parse().register("mm", this)
     }
 
     @CommandHook("reload")

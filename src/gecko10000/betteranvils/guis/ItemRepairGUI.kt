@@ -4,12 +4,10 @@ import gecko10000.betteranvils.BetterAnvils
 import gecko10000.betteranvils.DataManager
 import gecko10000.betteranvils.di.MyKoinComponent
 import gecko10000.betteranvils.model.RepairInfo
-import gecko10000.geckolib.GUI
 import gecko10000.geckolib.extensions.parseMM
 import kotlinx.coroutines.*
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -19,11 +17,10 @@ import redempt.redlib.inventorygui.ItemButton
 import redempt.redlib.itemutils.ItemUtils
 import redempt.redlib.misc.Task
 import kotlin.math.min
-import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-class ItemRepairGUI(player: Player, private val block: Block) : MyKoinComponent, GUI(player) {
+class ItemRepairGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
 
     private val plugin: BetterAnvils by inject()
     private val dataManager: DataManager by inject()
@@ -32,9 +29,6 @@ class ItemRepairGUI(player: Player, private val block: Block) : MyKoinComponent,
     private val job: Job
 
     init {
-        if (!Tag.ANVIL.isTagged(block.type)) {
-            shouldOpen = false
-        }
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 Task.syncDelayed { -> updateItemTimes() }
@@ -47,9 +41,11 @@ class ItemRepairGUI(player: Player, private val block: Block) : MyKoinComponent,
         val item = ItemStack.of(Material.YELLOW_STAINED_GLASS_PANE)
         item.editMeta {
             it.displayName(parseMM("<yellow>Empty"))
-            it.lore(listOf(
-                parseMM("<green>Click to set up repair")
-            ))
+            it.lore(
+                listOf(
+                    parseMM("<green>Click to set up repair")
+                )
+            )
         }
         return ItemButton.create(item) { _ ->
             RepairStartGUI(player, block)
@@ -59,7 +55,6 @@ class ItemRepairGUI(player: Player, private val block: Block) : MyKoinComponent,
     private fun updateItemTimes() {
         data.currentRepairs
         for (info: RepairInfo? in data.currentRepairs) {
-            if (info == null)
         }
     }
 

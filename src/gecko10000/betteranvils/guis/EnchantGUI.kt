@@ -2,15 +2,13 @@ package gecko10000.betteranvils.guis
 
 import gecko10000.betteranvils.BetterAnvils
 import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.geckolib.GUI
 import org.bukkit.Bukkit
-import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.koin.core.component.inject
 import redempt.redlib.inventorygui.InventoryGUI
 
-class EnchantCombineGUI(player: Player, private val block: Block) : MyKoinComponent, GUI(player) {
+class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
 
     companion object {
         private const val SIZE = 45
@@ -18,12 +16,6 @@ class EnchantCombineGUI(player: Player, private val block: Block) : MyKoinCompon
     }
 
     private val plugin: BetterAnvils by inject()
-
-    init {
-        if (!Tag.ANVIL.isTagged(block.type)) {
-            shouldOpen = false
-        }
-    }
 
     override fun createInventory(): InventoryGUI {
         val inventory = InventoryGUI(Bukkit.createInventory(this, SIZE, plugin.config.enchantmentAnvilName))
