@@ -1,13 +1,14 @@
 package gecko10000.betteranvils.guis
 
+import gecko10000.betteranvils.AnvilBlockManager
 import gecko10000.betteranvils.BetterAnvils
 import gecko10000.betteranvils.di.MyKoinComponent
+import gecko10000.geckolib.extensions.isEmpty
 import gecko10000.geckolib.extensions.withDefaults
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags
-import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -23,10 +24,11 @@ import redempt.redlib.misc.EventListener
 import redempt.redlib.misc.Task
 
 @Suppress("UnstableApiUsage")
-class AnvilRenameGUI(private val player: Player, block: Block) : InventoryHolder, MyKoinComponent {
+class AnvilRenameGUI(private val player: Player, private val block: Block) : InventoryHolder, MyKoinComponent {
 
     private val plugin: BetterAnvils by inject()
-    private val shouldOpen: Boolean = Tag.ANVIL.isTagged(block.type)
+    private val anvilBlockManager: AnvilBlockManager by inject()
+    private val shouldOpen: Boolean = anvilBlockManager.isValid(block)
     private val view: AnvilView = MenuType.ANVIL.create(player, plugin.config.renameGUIName)
     private val selfDestructTagResolver: TagResolver = run {
         val methods = StandardTags::class.java.declaredMethods
@@ -62,7 +64,18 @@ class AnvilRenameGUI(private val player: Player, block: Block) : InventoryHolder
                 e.isCancelled = true
                 return@EventListener
             }
-            if (e.slot != 2) return@EventListener
+            if (e.slot != 2 || inventory.getItem(2).isEmpty()) return@EventListener
+            if (!anvilBlockManager.isValid(block)) {
+                // Prevent rename if anvil missing
+                e.isCancelled = true
+                player.closeInventory()
+            } else {
+                // Seems like the sound plays in the virtual
+                // GUI, so we don't play it ourselves. A bit
+                // inconsistent since it doesn't play the anvil
+                // break sound, but close enough.
+                anvilBlockManager.damageAnvil(block, playSound = false)
+            }
             val newName = view.renameText ?: return@EventListener
             val simple = Component.text(newName)
             val blacklisted = simple != selfDestructMiniMessage.deserialize(newName)
@@ -72,7 +85,7 @@ class AnvilRenameGUI(private val player: Player, block: Block) : InventoryHolder
             inventory.setItem(0, null)
             player.closeInventory()
             val entity = player.world.dropItem(player.location.add(player.facing.direction).add(0.0, 0.1, 0.0), item)
-            entity.pickupDelay = 500
+            entity.pickupDelay = Integer.MAX_VALUE
             entity.isInvulnerable = true
             entity.fireTicks = 50
             val listener = EventListener(InventoryPickupItemEvent::class.java) { e ->
