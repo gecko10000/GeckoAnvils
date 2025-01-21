@@ -12,6 +12,7 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.inventory.InventoryPickupItemEvent
 import org.bukkit.event.inventory.PrepareAnvilEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
@@ -19,13 +20,22 @@ import org.bukkit.inventory.MenuType
 import org.bukkit.inventory.view.AnvilView
 import org.koin.core.component.inject
 import redempt.redlib.misc.EventListener
+import redempt.redlib.misc.Task
 
 @Suppress("UnstableApiUsage")
 class AnvilRenameGUI(private val player: Player, block: Block) : InventoryHolder, MyKoinComponent {
 
     private val plugin: BetterAnvils by inject()
     private val shouldOpen: Boolean = Tag.ANVIL.isTagged(block.type)
-    private val view: AnvilView = MenuType.ANVIL.create(player, Component.text("test"))
+    private val view: AnvilView = MenuType.ANVIL.create(player, plugin.config.renameGUIName)
+    private val selfDestructTagResolver: TagResolver = run {
+        val methods = StandardTags::class.java.declaredMethods
+        val extraResolvers = methods.filter { it.name in plugin.config.selfDestructTags }
+            .filter { it.parameterCount == 0 }
+            .map { it.invoke(null) }
+            .filterIsInstance<TagResolver>()
+        TagResolver.builder().resolvers(extraResolvers).build()
+    }
     private val safeMiniMessage: MiniMessage = MiniMessage.builder()
         .tags(
             TagResolver.builder()
@@ -33,10 +43,9 @@ class AnvilRenameGUI(private val player: Player, block: Block) : InventoryHolder
                     StandardTags.color(),
                     StandardTags.decorations(),
                     StandardTags.gradient(),
-                )
-                .build()
-        )
-        .build()
+                ).resolver(selfDestructTagResolver).build()
+        ).build()
+    private val selfDestructMiniMessage: MiniMessage = MiniMessage.builder().tags(selfDestructTagResolver).build()
 
     private fun start() {
         if (shouldOpen) {
@@ -53,6 +62,26 @@ class AnvilRenameGUI(private val player: Player, block: Block) : InventoryHolder
                 e.isCancelled = true
                 return@EventListener
             }
+            if (e.slot != 2) return@EventListener
+            val newName = view.renameText ?: return@EventListener
+            val simple = Component.text(newName)
+            val blacklisted = simple != selfDestructMiniMessage.deserialize(newName)
+            if (!blacklisted) return@EventListener
+            e.isCancelled = true
+            val item = inventory.getItem(2)?.clone() ?: return@EventListener
+            inventory.setItem(0, null)
+            player.closeInventory()
+            val entity = player.world.dropItem(player.location.add(player.facing.direction).add(0.0, 0.1, 0.0), item)
+            entity.pickupDelay = 500
+            entity.isInvulnerable = true
+            entity.fireTicks = 50
+            val listener = EventListener(InventoryPickupItemEvent::class.java) { e ->
+                if (e.item == entity) e.isCancelled = true
+            }
+            Task.syncDelayed({ ->
+                entity.remove()
+                listener.unregister()
+            }, 50L)
         }
         listeners += EventListener(PrepareAnvilEvent::class.java) { e ->
             val newName = view.renameText
@@ -62,7 +91,8 @@ class AnvilRenameGUI(private val player: Player, block: Block) : InventoryHolder
             }
             val result = e.result ?: return@EventListener
             val deserialized = safeMiniMessage.deserialize(newName)
-            val isSimple = deserialized == Component.text(newName)
+            val simple = Component.text(newName)
+            val isSimple = deserialized == simple
             result.editMeta {
                 it.displayName(deserialized.withDefaults())
             }
