@@ -53,6 +53,7 @@ class AnvilHomeGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssocia
 
     override fun createInventory(): InventoryGUI {
         val inventory = InventoryGUI(Bukkit.createInventory(this, InventoryType.HOPPER, plugin.config.homeAnvilName))
+        inventory.fill(0, inventory.size, FILLER)
         inventory.addButton(0, enchantButton())
         inventory.addButton(2, repairButton())
         inventory.addButton(4, renameButton())

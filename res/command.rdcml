@@ -4,4 +4,9 @@ betteranvils {
         hook reload
         permission betteranvils.reload
     }
+    reset player:target?(context self) {
+        help Reset stored data for player
+        hook reset
+        permission betteranvils.reset
+    }
 }

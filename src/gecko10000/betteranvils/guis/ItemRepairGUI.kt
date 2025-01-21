@@ -1,8 +1,8 @@
 package gecko10000.betteranvils.guis
 
 import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.DataManager
 import gecko10000.betteranvils.di.MyKoinComponent
+import gecko10000.betteranvils.managers.DataManager
 import gecko10000.betteranvils.model.RepairInfo
 import gecko10000.geckolib.extensions.parseMM
 import kotlinx.coroutines.*

@@ -1,8 +1,8 @@
 package gecko10000.betteranvils.guis
 
-import gecko10000.betteranvils.AnvilBlockManager
 import gecko10000.betteranvils.BetterAnvils
 import gecko10000.betteranvils.di.MyKoinComponent
+import gecko10000.betteranvils.managers.AnvilBlockManager
 import gecko10000.geckolib.extensions.isEmpty
 import gecko10000.geckolib.extensions.withDefaults
 import net.kyori.adventure.text.Component

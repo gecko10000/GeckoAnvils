@@ -1,6 +1,10 @@
 package gecko10000.betteranvils.di
 
-import gecko10000.betteranvils.*
+import gecko10000.betteranvils.BetterAnvils
+import gecko10000.betteranvils.CommandHandler
+import gecko10000.betteranvils.managers.AnvilBlockManager
+import gecko10000.betteranvils.managers.DataManager
+import gecko10000.betteranvils.managers.PermissionManager
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 

@@ -1,7 +1,8 @@
-package gecko10000.betteranvils
+package gecko10000.betteranvils.managers
 
+import gecko10000.betteranvils.BetterAnvils
 import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.model.PlayerRepairs
+import gecko10000.betteranvils.model.AnvilData
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.bukkit.Bukkit
@@ -23,7 +24,7 @@ class DataManager : MyKoinComponent {
     private val plugin: BetterAnvils by inject()
     private val json: Json by inject()
 
-    private val anvilData: MutableMap<UUID, PlayerRepairs> = mutableMapOf()
+    private val anvilData: MutableMap<UUID, AnvilData> = mutableMapOf()
     private val dataKey = NamespacedKey(plugin, "data")
 
     init {
@@ -35,9 +36,12 @@ class DataManager : MyKoinComponent {
         }, 0L, SAVE_INTERVAL_TICKS)
     }
 
-    private fun loadData(player: Player): PlayerRepairs {
+    private fun loadData(player: Player): AnvilData {
         val dataString = player.persistentDataContainer.get(dataKey, PersistentDataType.STRING)
-        val data = dataString?.let { json.decodeFromString(it) } ?: PlayerRepairs(currentRepairs = listOf())
+        val data = dataString?.let { json.decodeFromString(it) } ?: AnvilData(
+            currentEnchants = listOf(),
+            currentRepairs = listOf()
+        )
         anvilData[player.uniqueId] = data
         return data
     }
@@ -53,12 +57,20 @@ class DataManager : MyKoinComponent {
         anvilData.remove(player.uniqueId)
     }
 
-    fun getData(player: Player): PlayerRepairs {
+    fun shutdown() {
+        Bukkit.getOnlinePlayers().forEach(this::saveAndRemoveData)
+    }
+
+    fun getData(player: Player): AnvilData {
         return anvilData[player.uniqueId] ?: loadData(player)
     }
 
-    fun setData(player: Player, data: PlayerRepairs) {
+    fun setData(player: Player, data: AnvilData) {
         anvilData[player.uniqueId] = data
+    }
+
+    fun resetData(player: Player) {
+        setData(player, AnvilData(currentEnchants = listOf(), currentRepairs = listOf()))
     }
 
 }

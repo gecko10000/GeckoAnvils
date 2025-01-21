@@ -1,4 +1,4 @@
-package gecko10000.betteranvils
+package gecko10000.betteranvils.managers
 
 import gecko10000.betteranvils.di.MyKoinComponent
 import gecko10000.betteranvils.guis.AnvilHomeGUI

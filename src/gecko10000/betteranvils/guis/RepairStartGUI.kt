@@ -1,6 +1,7 @@
 package gecko10000.betteranvils.guis
 
 import gecko10000.betteranvils.BetterAnvils
+import gecko10000.betteranvils.DurationFormatter
 import gecko10000.betteranvils.di.MyKoinComponent
 import gecko10000.geckolib.extensions.MM
 import gecko10000.geckolib.extensions.parseMM
@@ -35,26 +36,16 @@ class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoc
         set(value) = inventory.inventory.setItem(REPAIR_ITEM_SLOT, value)
     private var duration: Duration? = null
 
-    private fun durationToString(duration: Duration): String {
-        val durationString = StringBuilder()
-        val days = duration.inWholeDays
-        if (days > 0) durationString.append("${days}d ")
-        val hours = duration.inWholeHours % 24
-        if (hours > 0) durationString.append("${hours}h ")
-        val minutes = duration.inWholeMinutes % 60
-        if (minutes > 0) durationString.append("${minutes}m ")
-        val seconds = duration.inWholeSeconds % 60
-        if (seconds > 0) durationString.append("${seconds}s ")
-        return durationString.toString().trimEnd()
-    }
-
     private fun timeItem(duration: Duration): ItemStack {
         val item = ItemStack.of(Material.CLOCK, max(1, duration.inWholeHours.toInt()))
         item.editMeta {
             it.displayName(parseMM("<gold>Repair will take"))
             it.lore(
                 listOf(
-                    MM.deserialize("<!i><yellow><time>", Placeholder.unparsed("time", durationToString(duration)))
+                    MM.deserialize(
+                        "<!i><yellow><time>",
+                        Placeholder.unparsed("time", DurationFormatter.format(duration))
+                    )
                 )
             )
         }

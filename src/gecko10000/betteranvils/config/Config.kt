@@ -13,9 +13,9 @@ import net.kyori.adventure.text.Component
 data class Config(
     val homeAnvilName: Component = MM.deserialize("<dark_gray>Anvil"),
     val enchantmentAnvilName: Component = MM.deserialize("<dark_purple>Enchantments"),
-    val enchantmentStartName: Component = MM.deserialize("<gold>Enchant Item or Combine Books"),
+    val enchantmentStartName: Component = MM.deserialize("<#008B8B>Enchant Item or Combine Books"),
     val itemRepairName: Component = MM.deserialize("<dark_green>Item Repair"),
-    val repairStartName: Component = MM.deserialize("<gold>Start Repair"),
+    val repairStartName: Component = MM.deserialize("<#008B8B>Start Repair"),
     val renameGUIName: Component = MM.deserialize("<gradient:blue:dark_green>Item Rename"),
     val simpleRenameCost: Int = 15,
     val coloredRenameCost: Int = 30,
