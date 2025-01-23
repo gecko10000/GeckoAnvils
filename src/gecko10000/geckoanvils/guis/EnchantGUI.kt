@@ -7,6 +7,7 @@ import gecko10000.geckoanvils.managers.DataManager
 import gecko10000.geckoanvils.managers.PermissionManager
 import gecko10000.geckoanvils.model.EnchantInfo
 import gecko10000.geckolib.extensions.MM
+import gecko10000.geckolib.extensions.extend
 import gecko10000.geckolib.extensions.parseMM
 import gecko10000.geckolib.extensions.withDefaults
 import kotlinx.coroutines.*
@@ -22,7 +23,6 @@ import redempt.redlib.inventorygui.InventoryGUI
 import redempt.redlib.inventorygui.ItemButton
 import redempt.redlib.itemutils.ItemUtils
 import redempt.redlib.misc.Task
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -34,9 +34,8 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
     private val permissionManager: PermissionManager by inject()
 
     private val data = dataManager.getData(player)
-    private val allowedEnchants = permissionManager.getAllowedEnchants(player)
-    private val missingEnchants = max(0, allowedEnchants - data.currentEnchants.size)
-    private val concurrentEnchants = data.currentEnchants.plus(List(missingEnchants) { null })
+    private val concurrentEnchants =
+        data.currentEnchants.extend(targetAmount = permissionManager.getAllowedEnchants(player), element = null)
     private val job: Job
 
     init {

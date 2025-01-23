@@ -33,13 +33,13 @@ class PermissionManager : MyKoinComponent {
         .mapNotNull { if (it.value) it.permission else null } // get positive perms
         .filter { it.startsWith(prefix) } // get relevant perms
         .mapNotNull { it.substringAfter(prefix).toIntOrNull() } // get integer value
-        .max() // total
+        .maxOrNull() ?: 0 // total
 
     private fun doublePermMax(player: Player, prefix: String) = player.effectivePermissions
         .mapNotNull { if (it.value) it.permission else null }
         .filter { it.startsWith(prefix) }
         .mapNotNull { it.substringAfter(prefix).toDoubleOrNull() }
-        .max()
+        .maxOrNull() ?: 0.0
 
     fun getAllowedEnchants(player: Player) = intPermMax(player, ENCHANT_COUNT_PREFIX)
     fun getAllowedRepairs(player: Player) = intPermMax(player, REPAIR_COUNT_PREFIX)
