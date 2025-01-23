@@ -1,4 +1,4 @@
-package gecko10000.betteranvils
+package gecko10000.geckoanvils
 
 import kotlin.time.Duration
 import kotlin.time.DurationUnit

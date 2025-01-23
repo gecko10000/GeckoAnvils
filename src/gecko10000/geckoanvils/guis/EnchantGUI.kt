@@ -1,11 +1,11 @@
-package gecko10000.betteranvils.guis
+package gecko10000.geckoanvils.guis
 
-import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.DurationFormatter
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.managers.DataManager
-import gecko10000.betteranvils.managers.PermissionManager
-import gecko10000.betteranvils.model.EnchantInfo
+import gecko10000.geckoanvils.DurationFormatter
+import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.DataManager
+import gecko10000.geckoanvils.managers.PermissionManager
+import gecko10000.geckoanvils.model.EnchantInfo
 import gecko10000.geckolib.extensions.MM
 import gecko10000.geckolib.extensions.parseMM
 import gecko10000.geckolib.extensions.withDefaults
@@ -29,7 +29,7 @@ import kotlin.time.toDuration
 
 class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
     private val dataManager: DataManager by inject()
     private val permissionManager: PermissionManager by inject()
 

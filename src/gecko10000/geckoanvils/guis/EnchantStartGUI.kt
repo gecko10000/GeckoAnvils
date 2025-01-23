@@ -1,10 +1,10 @@
-package gecko10000.betteranvils.guis
+package gecko10000.geckoanvils.guis
 
-import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.managers.AnvilBlockManager
-import gecko10000.betteranvils.managers.DataManager
-import gecko10000.betteranvils.model.EnchantInfo
+import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.AnvilBlockManager
+import gecko10000.geckoanvils.managers.DataManager
+import gecko10000.geckoanvils.model.EnchantInfo
 import gecko10000.geckolib.extensions.extend
 import gecko10000.geckolib.extensions.updated
 import org.bukkit.Bukkit
@@ -23,7 +23,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
         private const val SIZE = 54
     }
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
     private val anvilBlockManager: AnvilBlockManager by inject()
     private val dataManager: DataManager by inject()
 

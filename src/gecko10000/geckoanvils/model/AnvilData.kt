@@ -1,4 +1,4 @@
-package gecko10000.betteranvils.model
+package gecko10000.geckoanvils.model
 
 import kotlinx.serialization.Serializable
 

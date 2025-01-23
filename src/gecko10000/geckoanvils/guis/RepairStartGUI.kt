@@ -1,8 +1,8 @@
-package gecko10000.betteranvils.guis
+package gecko10000.geckoanvils.guis
 
-import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.DurationFormatter
-import gecko10000.betteranvils.di.MyKoinComponent
+import gecko10000.geckoanvils.DurationFormatter
+import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckolib.extensions.MM
 import gecko10000.geckolib.extensions.parseMM
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -26,7 +26,7 @@ class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoc
         private const val RESULT_SLOT = 16
     }
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
 
     private var itemToRepair: ItemStack?
         get() = inventory.inventory.getItem(DAMAGED_ITEM_SLOT)

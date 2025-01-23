@@ -1,7 +1,7 @@
-package gecko10000.betteranvils.guis
+package gecko10000.geckoanvils.guis
 
-import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.di.MyKoinComponent
+import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckolib.extensions.parseMM
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -19,7 +19,7 @@ class AnvilHomeGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssocia
         private const val SIZE = 54
     } */
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
 
     private fun enchantButton(): ItemButton {
         val item = ItemStack.of(Material.ENCHANTED_BOOK)

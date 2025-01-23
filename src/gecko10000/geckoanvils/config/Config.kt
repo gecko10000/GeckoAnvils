@@ -1,6 +1,6 @@
 @file:UseSerializers(MMComponentSerializer::class)
 
-package gecko10000.betteranvils.config
+package gecko10000.geckoanvils.config
 
 import com.charleskorn.kaml.YamlComment
 import gecko10000.geckolib.config.serializers.MMComponentSerializer

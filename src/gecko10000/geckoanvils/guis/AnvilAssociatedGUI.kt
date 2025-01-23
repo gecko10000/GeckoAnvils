@@ -1,7 +1,7 @@
-package gecko10000.betteranvils.guis
+package gecko10000.geckoanvils.guis
 
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.managers.AnvilBlockManager
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.AnvilBlockManager
 import gecko10000.geckolib.GUI
 import org.bukkit.block.Block
 import org.bukkit.entity.Player

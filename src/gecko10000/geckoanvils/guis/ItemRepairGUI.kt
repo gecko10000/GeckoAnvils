@@ -1,9 +1,9 @@
-package gecko10000.betteranvils.guis
+package gecko10000.geckoanvils.guis
 
-import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.managers.DataManager
-import gecko10000.betteranvils.model.RepairInfo
+import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.DataManager
+import gecko10000.geckoanvils.model.RepairInfo
 import gecko10000.geckolib.extensions.parseMM
 import kotlinx.coroutines.*
 import org.bukkit.Bukkit
@@ -22,7 +22,7 @@ import kotlin.time.toDuration
 
 class ItemRepairGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
     private val dataManager: DataManager by inject()
 
     private val data = dataManager.getData(player)

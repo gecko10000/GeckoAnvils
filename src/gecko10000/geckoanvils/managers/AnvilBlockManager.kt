@@ -1,7 +1,7 @@
-package gecko10000.betteranvils.managers
+package gecko10000.geckoanvils.managers
 
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.guis.AnvilHomeGUI
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.guis.AnvilHomeGUI
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.Tag

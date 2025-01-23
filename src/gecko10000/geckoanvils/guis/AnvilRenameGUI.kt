@@ -1,8 +1,8 @@
-package gecko10000.betteranvils.guis
+package gecko10000.geckoanvils.guis
 
-import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.managers.AnvilBlockManager
+import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.AnvilBlockManager
 import gecko10000.geckolib.extensions.isEmpty
 import gecko10000.geckolib.extensions.withDefaults
 import net.kyori.adventure.text.Component
@@ -26,7 +26,7 @@ import redempt.redlib.misc.Task
 @Suppress("UnstableApiUsage")
 class AnvilRenameGUI(private val player: Player, private val block: Block) : InventoryHolder, MyKoinComponent {
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
     private val anvilBlockManager: AnvilBlockManager by inject()
     private val shouldOpen: Boolean = anvilBlockManager.isValid(block)
     private val view: AnvilView = MenuType.ANVIL.create(player, plugin.config.renameGUIName)

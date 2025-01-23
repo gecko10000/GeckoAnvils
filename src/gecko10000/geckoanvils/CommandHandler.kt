@@ -1,7 +1,7 @@
-package gecko10000.betteranvils
+package gecko10000.geckoanvils
 
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.managers.DataManager
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.DataManager
 import gecko10000.geckolib.extensions.MM
 import gecko10000.geckolib.extensions.parseMM
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -13,7 +13,7 @@ import redempt.redlib.commandmanager.CommandParser
 
 class CommandHandler : MyKoinComponent {
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
     private val dataManager: DataManager by inject()
 
     init {

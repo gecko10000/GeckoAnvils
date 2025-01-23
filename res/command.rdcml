@@ -1,12 +1,12 @@
-betteranvils {
+geckoanvils {
     reload {
         help Reload the configs
         hook reload
-        permission betteranvils.reload
+        permission geckoanvils.reload
     }
     reset player:target?(context self) {
         help Reset stored data for player
         hook reset
-        permission betteranvils.reset
+        permission geckoanvils.reset
     }
 }

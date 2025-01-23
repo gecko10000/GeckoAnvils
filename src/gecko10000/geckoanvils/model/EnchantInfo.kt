@@ -1,6 +1,6 @@
 @file:UseSerializers(InternalItemStackSerializer::class)
 
-package gecko10000.betteranvils.model
+package gecko10000.geckoanvils.model
 
 import gecko10000.geckolib.config.serializers.InternalItemStackSerializer
 import kotlinx.serialization.Serializable

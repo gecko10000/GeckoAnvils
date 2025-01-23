@@ -1,8 +1,8 @@
-package gecko10000.betteranvils.managers
+package gecko10000.geckoanvils.managers
 
-import gecko10000.betteranvils.BetterAnvils
-import gecko10000.betteranvils.di.MyKoinComponent
-import gecko10000.betteranvils.model.AnvilData
+import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.model.AnvilData
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.bukkit.Bukkit
@@ -21,7 +21,7 @@ class DataManager : MyKoinComponent {
         private const val SAVE_INTERVAL_TICKS: Long = 20 * 60 * 5
     }
 
-    private val plugin: BetterAnvils by inject()
+    private val plugin: GeckoAnvils by inject()
     private val json: Json by inject()
 
     private val anvilData: MutableMap<UUID, AnvilData> = mutableMapOf()
