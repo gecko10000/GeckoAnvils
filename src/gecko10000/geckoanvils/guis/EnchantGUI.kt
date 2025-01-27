@@ -6,10 +6,7 @@ import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.DataManager
 import gecko10000.geckoanvils.managers.PermissionManager
 import gecko10000.geckoanvils.model.EnchantInfo
-import gecko10000.geckolib.extensions.MM
-import gecko10000.geckolib.extensions.extend
-import gecko10000.geckolib.extensions.parseMM
-import gecko10000.geckolib.extensions.withDefaults
+import gecko10000.geckolib.extensions.*
 import kotlinx.coroutines.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -73,7 +70,7 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
         }
     }
 
-    private fun currentEnchantItem(data: EnchantInfo): ItemButton {
+    private fun currentEnchantItem(index: Int, data: EnchantInfo): ItemButton {
         val displayItem = data.outputItem.clone()
         val remainingTime = remainingTime(data)
         displayItem.editMeta {
@@ -88,15 +85,19 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
         }
         return ItemButton.create(displayItem) { _ ->
             if (remainingTime > 0) return@create
-            // TODO: collect
-            println("Collected item ${data.outputItem}.")
+            val item = data.outputItem.clone()
+            val newEnchants = concurrentEnchants.updated(index) { null }
+            val newData = this.data.copy(currentEnchants = newEnchants)
+            dataManager.setData(player, newData)
+            ItemUtils.give(player, item)
+            EnchantGUI(player, block)
         }
     }
 
     private fun updateInventory(gui: InventoryGUI = this.inventory) {
         for (i in concurrentEnchants.indices) {
             val infoInSlot = concurrentEnchants[i]
-            val button = if (infoInSlot == null) newEnchantButton(i) else currentEnchantItem(infoInSlot)
+            val button = if (infoInSlot == null) newEnchantButton(i) else currentEnchantItem(i, infoInSlot)
             gui.addButton(i, button)
         }
     }

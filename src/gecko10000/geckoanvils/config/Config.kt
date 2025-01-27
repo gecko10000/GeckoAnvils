@@ -23,5 +23,5 @@ data class Config(
         "Attempted renaming with these MM",
         "tags will be burned with fire."
     )
-    val selfDestructTags: List<String> = listOf("clickEvent")
+    val selfDestructTags: List<String> = listOf("clickEvent"),
 )
