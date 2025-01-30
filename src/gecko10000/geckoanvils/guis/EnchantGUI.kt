@@ -1,6 +1,6 @@
 package gecko10000.geckoanvils.guis
 
-import gecko10000.geckoanvils.DurationFormatter
+import gecko10000.geckoanvils.DurationUtils
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.DataManager
@@ -9,6 +9,7 @@ import gecko10000.geckoanvils.model.EnchantInfo
 import gecko10000.geckolib.extensions.*
 import kotlinx.coroutines.*
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -21,10 +22,16 @@ import redempt.redlib.inventorygui.ItemButton
 import redempt.redlib.itemutils.ItemUtils
 import redempt.redlib.misc.Task
 import kotlin.math.min
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import kotlin.math.pow
+import kotlin.math.round
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
+
+    companion object {
+        private val ONE_SEC = 1.seconds
+    }
 
     private val plugin: GeckoAnvils by inject()
     private val dataManager: DataManager by inject()
@@ -39,7 +46,7 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 Task.syncDelayed { -> updateInventory() }
-                delay(1.toDuration(DurationUnit.SECONDS))
+                delay(DurationUtils.ONE_SEC)
             }
         }
     }
@@ -52,39 +59,64 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
         return ItemButton.create(item) { _ -> EnchantStartGUI(player, block, index) }
     }
 
-    private fun remainingTime(data: EnchantInfo): Long {
-        val currentTime = System.currentTimeMillis()
-        val passedTime = currentTime - data.startTime
-        return data.duration - passedTime
+    private fun time(remainingTime: Long): Component {
+        val duration = remainingTime.milliseconds.plus(DurationUtils.ONE_SEC)
+        return MM.deserialize(
+            "<yellow><time>",
+            Placeholder.unparsed("time", DurationUtils.format(duration))
+        ).withDefaults()
     }
 
-    private fun timeString(remainingTime: Long): Component {
-        if (remainingTime <= 0) {
-            return parseMM("<green>Done! Click to collect.")
-        } else {
-            val duration = remainingTime.toDuration(DurationUnit.MILLISECONDS)
-            return MM.deserialize(
-                "<yellow><time>",
-                Placeholder.unparsed("time", DurationFormatter.format(duration))
-            ).withDefaults()
-        }
+    private fun percentage(progress: Double): Component {
+        val precision = plugin.config.percentageDecimals
+        val pow = 10.0.pow(precision)
+        val percent = progress * 100
+        val roundedPercent = round(min(percent * pow, 100 * pow - 1)) / pow
+        val formatted = String.format("%.${precision}f", roundedPercent)
+        return parseMM("<yellow>$formatted%")
+    }
+
+    private fun progressBar(progress: Double): Component {
+        val length = plugin.config.progressBarLength
+        val filledCount = round(length * progress).toInt()
+        return Component.text("|".repeat(filledCount), NamedTextColor.GREEN).append(
+            Component.text("|".repeat(length - filledCount), NamedTextColor.RED)
+        ).withDefaults()
     }
 
     private fun currentEnchantItem(index: Int, data: EnchantInfo): ItemButton {
         val displayItem = data.outputItem.clone()
-        val remainingTime = remainingTime(data)
+        val passedTime = System.currentTimeMillis() - data.startTime
+        val progress = passedTime.toDouble() / data.duration
+        val remainingTime = data.duration - passedTime
+        if (remainingTime <= 0) return doneEnchantButton(index, data)
         displayItem.editMeta {
             it.lore(
                 it.lore().orEmpty().plus(
                     listOf(
                         Component.empty(),
-                        timeString(remainingTime),
+                        percentage(progress).append(Component.text(" - ")).append(time(remainingTime)),
+                        progressBar(progress),
+                    )
+                )
+            )
+        }
+        return ItemButton.create(displayItem) { _ -> }
+    }
+
+    private fun doneEnchantButton(index: Int, data: EnchantInfo): ItemButton {
+        val displayItem = data.outputItem.clone()
+        displayItem.editMeta {
+            it.lore(
+                it.lore().orEmpty().plus(
+                    listOf(
+                        Component.empty(),
+                        parseMM("<green>Done! Click to collect.")
                     )
                 )
             )
         }
         return ItemButton.create(displayItem) { _ ->
-            if (remainingTime > 0) return@create
             val item = data.outputItem.clone()
             val newEnchants = concurrentEnchants.updated(index) { null }
             val newData = this.data.copy(currentEnchants = newEnchants)

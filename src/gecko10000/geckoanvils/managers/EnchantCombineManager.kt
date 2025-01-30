@@ -1,14 +1,23 @@
 package gecko10000.geckoanvils.managers
 
+import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.datacomponent.item.ItemEnchantments
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
+import org.koin.core.component.inject
+import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.time.Duration
 
 @Suppress("UnstableApiUsage")
 class EnchantCombineManager : MyKoinComponent {
+
+    private val plugin: GeckoAnvils by inject()
 
     private fun ItemStack.properEnchants(): Map<Enchantment, Int> {
         return this.getData(DataComponentTypes.STORED_ENCHANTMENTS)?.enchantments() ?: this.enchantments
@@ -17,6 +26,21 @@ class EnchantCombineManager : MyKoinComponent {
     private fun ItemStack.properContainsEnchant(enchantment: Enchantment): Boolean {
         return this.getData(DataComponentTypes.STORED_ENCHANTMENTS)?.enchantments()?.containsKey(enchantment)
             ?: this.containsEnchantment(enchantment)
+    }
+
+    private fun ItemStack.properAddEnchants(enchants: Map<Enchantment, Int>) {
+        val storedEnchants = this.getData(DataComponentTypes.STORED_ENCHANTMENTS)
+        if (storedEnchants != null) {
+            this.setData(
+                DataComponentTypes.STORED_ENCHANTMENTS,
+                ItemEnchantments.itemEnchantments(
+                    storedEnchants.enchantments().plus(enchants),
+                    storedEnchants.showInTooltip()
+                )
+            )
+            return
+        }
+        this.addUnsafeEnchantments(enchants)
     }
 
     // Checks to make sure the input items
@@ -82,8 +106,42 @@ class EnchantCombineManager : MyKoinComponent {
 
     private fun applyEnchants(item: ItemStack, validEnchants: Map<Enchantment, Int>): ItemStack {
         val item = item.clone()
-        item.addUnsafeEnchantments(validEnchants)
+        item.properAddEnchants(validEnchants)
         return item
+    }
+
+    private fun getXPCost(item: ItemStack): Int {
+        var cost = 0.0
+        val enchants = item.properEnchants()
+        for ((enchant, level) in enchants) {
+            var costForEnchant = plugin.config.baseEnchantmentCost.toDouble() * level
+            // [1, max]: 1+level/max: (1, 2]
+            // (max, inf): 2^(level+1 - max): (4, 8, ...)
+            val isWithinVanilla = level <= enchant.maxLevel
+            if (isWithinVanilla) {
+                costForEnchant *= 1 + level.toDouble() / enchant.maxLevel
+            } else {
+                costForEnchant *= 2.0.pow(level + 1 - enchant.maxLevel.toDouble())
+            }
+            cost += costForEnchant
+        }
+        cost *= enchants.size
+        return ceil(cost).toInt()
+    }
+
+    private fun getTime(item: ItemStack): Duration {
+        var duration = Duration.ZERO
+        val enchants = item.properEnchants()
+        for ((enchant, level) in enchants) {
+            var enchantDur = plugin.config.baseEnchantmentDuration
+            val withinMax = min(enchant.maxLevel, level) + 1
+            enchantDur = enchantDur.times(withinMax)
+            val extra = max(level - enchant.maxLevel, 0)
+            val extraMult = 2.0.pow(extra)
+            enchantDur = enchantDur.times(extraMult)
+            duration = duration.plus(enchantDur)
+        }
+        return duration
     }
 
     // Calculates enchantment upgrades and where to apply
@@ -96,22 +154,19 @@ class EnchantCombineManager : MyKoinComponent {
         val validEnchants = keepApplicableEnchants(outputItem, outputEnchants)
         if (validEnchants.isEmpty()) return CalcResult.EMPTY
         val newItem = applyEnchants(outputItem, validEnchants)
-        if (newItem.isSimilar(outputItem)) return CalcResult.EMPTY
-        return CalcResult(newItem, 100, 2.0)
+        if (input.any { it.isSimilar(newItem) }) return CalcResult.EMPTY
+        val xpCost = getXPCost(newItem)
+        val time = getTime(newItem)
+        return CalcResult(newItem, xpCost, time)
     }
-
-    private data class LeveledEnch(
-        val enchantment: Enchantment,
-        val level: Int,
-    )
 
     data class CalcResult(
         val output: ItemStack?,
         val xpCost: Int,
-        val timeMultiplier: Double,
+        val time: Duration,
     ) {
         companion object {
-            val EMPTY = CalcResult(null, 0, 1.0)
+            val EMPTY = CalcResult(null, 0, Duration.ZERO)
         }
     }
 

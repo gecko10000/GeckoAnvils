@@ -1,5 +1,6 @@
 package gecko10000.geckoanvils.guis
 
+import gecko10000.geckoanvils.DurationUtils
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.AnvilBlockManager
@@ -17,6 +18,7 @@ import org.koin.core.component.inject
 import redempt.redlib.inventorygui.InventoryGUI
 import redempt.redlib.inventorygui.ItemButton
 import redempt.redlib.misc.Task
+import kotlin.time.Duration
 
 class EnchantStartGUI(player: Player, block: Block, private val index: Int) : MyKoinComponent,
     AnvilAssociatedGUI(player, block) {
@@ -57,10 +59,10 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
         return item
     }
 
-    private fun timeItem(multiplier: Double): ItemStack {
+    private fun timeItem(time: Duration): ItemStack {
         val item = ItemStack.of(Material.CLOCK)
         item.editMeta {
-            it.displayName(parseMM("<dark_aqua>Time: $multiplier"))
+            it.displayName(parseMM("<dark_aqua>Time: ${DurationUtils.format(time)}"))
         }
         return item
     }
@@ -72,7 +74,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
             it.lore(
                 listOf(
                     parseMM("<red>This will cost <u>${result.xpCost} XP"),
-                    parseMM("<red>and take <u>${result.timeMultiplier}</u>.")
+                    parseMM("<red>and take <u>${DurationUtils.format(result.time)}</u>.")
                 )
             )
         }
@@ -88,7 +90,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
                 EnchantInfo(
                     inventory.openSlots.sorted().mapNotNull { inventory.inventory.getItem(it) },
                     startTime = System.currentTimeMillis(),
-                    duration = 1000 * 30L,
+                    duration = result.time.inWholeMilliseconds,
                     outputItem = result.output!!,
                 )
             }
@@ -112,7 +114,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
 
     private fun confirmButton(): ItemButton {
         if (result.output == null) return invalidConfirmButton("No valid combination of items provided!")
-        if (player.calculateTotalExperiencePoints() < result.xpCost) invalidConfirmButton("You don't have enough XP!")
+        if (player.calculateTotalExperiencePoints() < result.xpCost) return invalidConfirmButton("You don't have enough XP!")
         return validConfirmButton()
     }
 
@@ -121,7 +123,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
         result = enchantCombineManager.calculateCombination(inputs)
         gui.inventory.setItem(XP_COST_SLOT, xpCostItem(result.xpCost))
         gui.inventory.setItem(OUTPUT_SLOT, result.output ?: noOutputItem)
-        gui.inventory.setItem(TIME_SLOT, timeItem(result.timeMultiplier))
+        gui.inventory.setItem(TIME_SLOT, timeItem(result.time))
         gui.addButton(SIZE - 1, confirmButton())
     }
 

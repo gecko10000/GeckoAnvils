@@ -1,6 +1,6 @@
 package gecko10000.geckoanvils.guis
 
-import gecko10000.geckoanvils.DurationFormatter
+import gecko10000.geckoanvils.DurationUtils
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckolib.extensions.MM
@@ -44,7 +44,7 @@ class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoc
                 listOf(
                     MM.deserialize(
                         "<!i><yellow><time>",
-                        Placeholder.unparsed("time", DurationFormatter.format(duration))
+                        Placeholder.unparsed("time", DurationUtils.format(duration))
                     )
                 )
             )

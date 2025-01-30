@@ -1,5 +1,6 @@
 package gecko10000.geckoanvils.guis
 
+import gecko10000.geckoanvils.DurationUtils
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.DataManager
@@ -17,8 +18,6 @@ import redempt.redlib.inventorygui.ItemButton
 import redempt.redlib.itemutils.ItemUtils
 import redempt.redlib.misc.Task
 import kotlin.math.min
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 class ItemRepairGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
 
@@ -32,7 +31,7 @@ class ItemRepairGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoci
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 Task.syncDelayed { -> updateItemTimes() }
-                delay(1.toDuration(DurationUnit.SECONDS))
+                delay(DurationUtils.ONE_SEC)
             }
         }
     }
