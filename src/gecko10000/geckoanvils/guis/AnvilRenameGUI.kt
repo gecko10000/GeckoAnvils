@@ -4,6 +4,7 @@ import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.AnvilBlockManager
 import gecko10000.geckolib.extensions.isEmpty
+import gecko10000.geckolib.extensions.name
 import gecko10000.geckolib.extensions.withDefaults
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -86,16 +87,19 @@ class AnvilRenameGUI(private val player: Player, private val block: Block) : Inv
             inventory.setItem(0, null)
             player.closeInventory()
             val entity = player.world.dropItem(player.location.add(player.facing.direction).add(0.0, 0.1, 0.0), item)
-            entity.pickupDelay = Integer.MAX_VALUE
+            entity.isCustomNameVisible = true
+            entity.customName(item.name())
+            entity.setCanMobPickup(false)
+            entity.setCanPlayerPickup(false)
             entity.isInvulnerable = true
-            entity.fireTicks = 50
+            entity.fireTicks = 5 * 20
             val listener = EventListener(InventoryPickupItemEvent::class.java) { e ->
                 if (e.item == entity) e.isCancelled = true
             }
             Task.syncDelayed({ ->
                 entity.remove()
                 listener.unregister()
-            }, 50L)
+            }, entity.fireTicks.toLong())
         }
         listeners += EventListener(PrepareAnvilEvent::class.java) { e ->
             val newName = view.renameText
