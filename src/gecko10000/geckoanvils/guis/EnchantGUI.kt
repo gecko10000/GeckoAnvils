@@ -63,7 +63,7 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
         val duration = remainingTime.milliseconds.plus(DurationUtils.ONE_SEC)
         return MM.deserialize(
             "<yellow><time>",
-            Placeholder.unparsed("time", DurationUtils.format(duration))
+            Placeholder.unparsed("time", DurationUtils.clockFormat(duration))
         ).withDefaults()
     }
 
