@@ -8,10 +8,7 @@ import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 import kotlin.time.Duration
 
 @Suppress("UnstableApiUsage")
@@ -110,8 +107,19 @@ class EnchantCombineManager : MyKoinComponent {
         return item
     }
 
-    private fun getXPCost(item: ItemStack): Int {
-        var cost = 0.0
+    // https://minecraft.wiki/w/Experience#Leveling_up
+    private fun xpToLevel(xp: Int): Int {
+        return ceil(
+            when (xp) {
+                in 0..352 -> sqrt(xp + 9.0) - 3
+                in 353..1507 -> 8.1 + sqrt(2.0 / 5 * (xp - 7839.0 / 40))
+                else -> 325.0 / 18 + sqrt(2.0 / 9 * (xp - 54215.0 / 72))
+            }
+        ).toInt()
+    }
+
+    private fun getLevelCost(item: ItemStack): Int {
+        var xpCost = 0.0
         val enchants = item.properEnchants()
         for ((enchant, level) in enchants) {
             var costForEnchant = plugin.config.baseEnchantmentCost.toDouble() * level
@@ -123,10 +131,10 @@ class EnchantCombineManager : MyKoinComponent {
             } else {
                 costForEnchant *= 2.0.pow(level + 1 - enchant.maxLevel.toDouble())
             }
-            cost += costForEnchant
+            xpCost += costForEnchant
         }
-        cost *= enchants.size
-        return ceil(cost).toInt()
+        xpCost *= enchants.size
+        return xpToLevel(ceil(xpCost).toInt())
     }
 
     private fun getTime(item: ItemStack): Duration {
@@ -155,14 +163,14 @@ class EnchantCombineManager : MyKoinComponent {
         if (validEnchants.isEmpty()) return CalcResult.EMPTY
         val newItem = applyEnchants(outputItem, validEnchants)
         if (input.any { it.isSimilar(newItem) }) return CalcResult.EMPTY
-        val xpCost = getXPCost(newItem)
+        val levelCost = getLevelCost(newItem)
         val time = getTime(newItem)
-        return CalcResult(newItem, xpCost, time)
+        return CalcResult(newItem, levelCost, time)
     }
 
     data class CalcResult(
         val output: ItemStack?,
-        val xpCost: Int,
+        val levelCost: Int,
         val time: Duration,
     ) {
         companion object {

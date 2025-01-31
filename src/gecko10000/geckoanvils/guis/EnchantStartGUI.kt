@@ -37,24 +37,18 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
 
     private var result: EnchantCombineManager.CalcResult = EnchantCombineManager.CalcResult.EMPTY
 
-    private fun testButton(): ItemButton {
-        val item = ItemStack.of(Material.GREEN_STAINED_GLASS)
-        return ItemButton.create(item) { _ ->
-        }
-    }
-
     private val noOutputItem = ItemStack.of(Material.BARRIER).apply {
         editMeta {
             it.displayName(parseMM("<red>No Result!"))
         }
     }
 
-    private fun xpCostItem(cost: Int): ItemStack {
+    private fun levelCostItem(cost: Int): ItemStack {
         val item = ItemStack.of(Material.EXPERIENCE_BOTTLE)
-        val playerXP = player.calculateTotalExperiencePoints()
+        val level = player.level
         item.editMeta {
-            it.displayName(parseMM("<gold>XP Cost: <yellow>$cost"))
-            it.lore(listOf(parseMM("<gold>You have <yellow>$playerXP")))
+            it.displayName(parseMM("<gold>Level Cost: <yellow>$cost"))
+            it.lore(listOf(parseMM("<gold>You have <yellow>$level")))
         }
         return item
     }
@@ -73,7 +67,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
             it.displayName(parseMM("<green>Confirm"))
             it.lore(
                 listOf(
-                    parseMM("<red>This will cost <u>${result.xpCost} XP"),
+                    parseMM("<red>This will cost <u>${result.levelCost} levels"),
                     parseMM("<red>and take <u>${DurationUtils.format(result.time)}</u>.")
                 )
             )
@@ -84,7 +78,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
                 return@create
             }
             anvilBlockManager.damageAnvil(block)
-            player.setExperienceLevelAndProgress(player.calculateTotalExperiencePoints() - result.xpCost)
+            player.level -= result.levelCost
             val prevData = dataManager.getData(player)
             val updatedEnchants = prevData.currentEnchants.extend(null, targetAmount = index + 1).updated(index) {
                 EnchantInfo(
@@ -114,14 +108,14 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
 
     private fun confirmButton(): ItemButton {
         if (result.output == null) return invalidConfirmButton("No valid combination of items provided!")
-        if (player.calculateTotalExperiencePoints() < result.xpCost) return invalidConfirmButton("You don't have enough XP!")
+        if (player.level < result.levelCost) return invalidConfirmButton("You don't have enough XP levels!")
         return validConfirmButton()
     }
 
     private fun updateInventory(gui: InventoryGUI = inventory) {
         val inputs = gui.openSlots.sorted().mapNotNull { gui.inventory.getItem(it) }
         result = enchantCombineManager.calculateCombination(inputs)
-        gui.inventory.setItem(XP_COST_SLOT, xpCostItem(result.xpCost))
+        gui.inventory.setItem(XP_COST_SLOT, levelCostItem(result.levelCost))
         gui.inventory.setItem(OUTPUT_SLOT, result.output ?: noOutputItem)
         gui.inventory.setItem(TIME_SLOT, timeItem(result.time))
         gui.addButton(SIZE - 1, confirmButton())
