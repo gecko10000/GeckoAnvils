@@ -45,6 +45,7 @@ class AnvilRenameGUI(private val player: Player, private val block: Block) : Inv
                     StandardTags.color(),
                     StandardTags.decorations(),
                     StandardTags.gradient(),
+                    StandardTags.shadowColor(),
                 ).resolver(selfDestructTagResolver).build()
         ).build()
     private val selfDestructMiniMessage: MiniMessage = MiniMessage.builder().tags(selfDestructTagResolver).build()
