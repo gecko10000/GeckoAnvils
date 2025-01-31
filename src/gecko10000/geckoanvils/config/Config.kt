@@ -16,10 +16,10 @@ import kotlin.time.Duration.Companion.minutes
 data class Config(
     val homeAnvilName: Component = MM.deserialize("<dark_gray>Anvil"),
     val enchantmentAnvilName: Component = MM.deserialize("<dark_purple>Enchantments"),
-    val enchantmentStartName: Component = MM.deserialize("<#008B8B>Enchant Item or Combine Books"),
+    val enchantmentStartName: Component = MM.deserialize("<#008B8B>Enchant, Disenchant, or Combine"),
     val itemRepairName: Component = MM.deserialize("<dark_green>Item Repair"),
     val repairStartName: Component = MM.deserialize("<#008B8B>Start Repair"),
-    val renameGUIName: Component = MM.deserialize("<gradient:blue:dark_green>Item Rename"),
+    val renameGUIName: Component = MM.deserialize("<gradient:green:yellow>Rename Item"),
     val simpleRenameCost: Int = 15,
     val coloredRenameCost: Int = 30,
     @YamlComment(
@@ -29,6 +29,8 @@ data class Config(
     val selfDestructTags: List<String> = listOf("clickEvent"),
     val baseEnchantmentCost: Int = 100,
     val baseEnchantmentDuration: Duration = 10.minutes,
+    val baseDisenchantLevelCost: Int = 3,
+    val baseDisenchantDuration: Duration = 20.minutes,
     val progressBarLength: Int = 50,
     val percentageDecimals: Int = 2,
 )

@@ -16,9 +16,10 @@ class EnchantCombineManager : MyKoinComponent {
 
     private val plugin: GeckoAnvils by inject()
 
-    private fun ItemStack.properEnchants(): Map<Enchantment, Int> {
-        return this.getData(DataComponentTypes.STORED_ENCHANTMENTS)?.enchantments() ?: this.enchantments
-    }
+    private fun ItemStack.removableEnchants() = this.properEnchants().filterKeys { !it.isCursed }
+
+    private fun ItemStack.properEnchants() =
+        this.getData(DataComponentTypes.STORED_ENCHANTMENTS)?.enchantments() ?: this.enchantments
 
     private fun ItemStack.properContainsEnchant(enchantment: Enchantment): Boolean {
         return this.getData(DataComponentTypes.STORED_ENCHANTMENTS)?.enchantments()?.containsKey(enchantment)
@@ -38,6 +39,42 @@ class EnchantCombineManager : MyKoinComponent {
             return
         }
         this.addUnsafeEnchantments(enchants)
+    }
+
+    private fun getDisenchantResult(input: List<ItemStack>): CalcResult? {
+        // Needs to be just an item and a book
+        if (input.size != 2) return null
+        // One of the items is a book
+        val book = input.firstOrNull { it.type == Material.BOOK } ?: return null
+        // And exactly 1
+        if (book.amount != 1) return null
+        // Ensure other item is not also a book
+        val otherItem = input.firstOrNull { it.type != Material.BOOK }?.clone() ?: return null
+        // And exactly 1
+        if (otherItem.amount != 1) return null
+        val enchants = otherItem.removableEnchants()
+        // Item is disenchantable
+        if (enchants.isEmpty()) return null
+        val outputBook = ItemStack.of(Material.ENCHANTED_BOOK)
+        outputBook.properAddEnchants(enchants)
+        enchants.forEach { (e, _) -> otherItem.removeEnchantment(e) }
+        val levelCost = plugin.config.baseDisenchantLevelCost *
+                enchants.values.sum() *
+                enchants.entries.fold(1.0) { m, (e, l) ->
+                    val overMax = max(1, l - e.maxLevel)
+                    return@fold m + log2(overMax.toDouble())
+                }
+        val time = plugin.config.baseDisenchantDuration *
+                //enchants.size *
+                enchants.entries.fold(1.0) { m, (e, l) ->
+                    val overMax = max(0, l - e.maxLevel)
+                    return@fold m + (2.0.pow(overMax) + l.toDouble() / e.maxLevel)
+                }
+        return CalcResult(
+            listOf(outputBook, otherItem),
+            levelCost = levelCost.toInt(),
+            time = time
+        )
     }
 
     // Checks to make sure the input items
@@ -156,6 +193,7 @@ class EnchantCombineManager : MyKoinComponent {
     // enchantments. Returns the result (possibly none) and
     // whether any upgrades were performed
     fun calculateCombination(input: List<ItemStack>): CalcResult {
+        val disenchantResult = getDisenchantResult(input)?.let { return it }
         val outputItem = areInputMaterialsValid(input) ?: return CalcResult.EMPTY
         val enchantCounts = getEnchantCounts(input)
         val outputEnchants = getOutputEnchants(enchantCounts)

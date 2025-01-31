@@ -89,6 +89,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
                 )
             }
             dataManager.setData(player, prevData.copy(currentEnchants = updatedEnchants))
+            inventory.setReturnsItems(false)
             EnchantGUI(player, block)
         }
     }
