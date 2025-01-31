@@ -13,5 +13,5 @@ data class EnchantInfo(
     val inputItems: List<ItemStack>,
     val startTime: Long,
     val duration: Long,
-    val outputItem: ItemStack,
+    val outputItems: List<ItemStack>,
 )

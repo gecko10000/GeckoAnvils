@@ -10,9 +10,10 @@ import org.bukkit.inventory.ItemStack
 
 @Serializable
 data class RepairInfo(
-    val item: ItemStack,
+    val inputItem: ItemStack,
     val startTime: Long,
+    val duration: Long,
     val repairMaterial: Material,
     val repairAmount: Int,
-    val duration: Long,
+    val outputItem: ItemStack,
 )

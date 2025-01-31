@@ -85,7 +85,7 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
     }
 
     private fun currentEnchantItem(index: Int, data: EnchantInfo): ItemButton {
-        val displayItem = data.outputItem.clone()
+        val displayItem = data.outputItems.first().clone()
         val passedTime = System.currentTimeMillis() - data.startTime
         val progress = passedTime.toDouble() / data.duration
         val remainingTime = data.duration - passedTime
@@ -105,7 +105,7 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
     }
 
     private fun doneEnchantButton(index: Int, data: EnchantInfo): ItemButton {
-        val displayItem = data.outputItem.clone()
+        val displayItem = data.outputItems.first().clone()
         displayItem.editMeta {
             it.lore(
                 it.lore().orEmpty().plus(
@@ -117,11 +117,11 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
             )
         }
         return ItemButton.create(displayItem) { _ ->
-            val item = data.outputItem.clone()
+            val items = data.outputItems.map(ItemStack::clone)
             val newEnchants = concurrentEnchants.updated(index) { null }
             val newData = this.data.copy(currentEnchants = newEnchants)
             dataManager.setData(player, newData)
-            ItemUtils.give(player, item)
+            ItemUtils.give(player, *items.toTypedArray())
             EnchantGUI(player, block)
         }
     }

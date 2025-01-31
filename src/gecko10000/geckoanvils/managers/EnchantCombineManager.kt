@@ -165,11 +165,11 @@ class EnchantCombineManager : MyKoinComponent {
         if (input.any { it.isSimilar(newItem) }) return CalcResult.EMPTY
         val levelCost = getLevelCost(newItem)
         val time = getTime(newItem)
-        return CalcResult(newItem, levelCost, time)
+        return CalcResult(listOf(newItem), levelCost, time)
     }
 
     data class CalcResult(
-        val output: ItemStack?,
+        val output: List<ItemStack>?,
         val levelCost: Int,
         val time: Duration,
     ) {

@@ -85,7 +85,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
                     inventory.openSlots.sorted().mapNotNull { inventory.inventory.getItem(it) },
                     startTime = System.currentTimeMillis(),
                     duration = result.time.inWholeMilliseconds,
-                    outputItem = result.output!!,
+                    outputItems = result.output!!,
                 )
             }
             dataManager.setData(player, prevData.copy(currentEnchants = updatedEnchants))
@@ -116,7 +116,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
         val inputs = gui.openSlots.sorted().mapNotNull { gui.inventory.getItem(it) }
         result = enchantCombineManager.calculateCombination(inputs)
         gui.inventory.setItem(XP_COST_SLOT, levelCostItem(result.levelCost))
-        gui.inventory.setItem(OUTPUT_SLOT, result.output ?: noOutputItem)
+        gui.inventory.setItem(OUTPUT_SLOT, result.output?.firstOrNull() ?: noOutputItem)
         gui.inventory.setItem(TIME_SLOT, timeItem(result.time))
         gui.addButton(SIZE - 1, confirmButton())
     }
