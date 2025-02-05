@@ -1,16 +1,17 @@
 package gecko10000.geckoanvils.guis
 
 import gecko10000.geckoanvils.DurationUtils
+import gecko10000.geckoanvils.DurationUtils.addProgressInfo
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.DataManager
 import gecko10000.geckoanvils.managers.PermissionManager
 import gecko10000.geckoanvils.model.EnchantInfo
-import gecko10000.geckolib.extensions.*
+import gecko10000.geckolib.extensions.extend
+import gecko10000.geckolib.extensions.parseMM
+import gecko10000.geckolib.extensions.updated
 import kotlinx.coroutines.*
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -22,9 +23,6 @@ import redempt.redlib.inventorygui.ItemButton
 import redempt.redlib.itemutils.ItemUtils
 import redempt.redlib.misc.Task
 import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.round
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
@@ -54,53 +52,18 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
     private fun newEnchantButton(index: Int): ItemButton {
         val item = ItemStack.of(Material.LIME_STAINED_GLASS_PANE)
         item.editMeta {
-            it.displayName(parseMM("<gray>(<green>+</green>) <dark_green>Start Enchantment"))
+            it.displayName(parseMM("<gray>(<green>+</green>) <light_purple>Start Enchantment"))
         }
         return ItemButton.create(item) { _ -> EnchantStartGUI(player, block, index) }
     }
 
-    private fun time(remainingTime: Long): Component {
-        val duration = remainingTime.milliseconds.plus(DurationUtils.ONE_SEC)
-        return MM.deserialize(
-            "<yellow><time>",
-            Placeholder.unparsed("time", DurationUtils.clockFormat(duration))
-        ).withDefaults()
-    }
-
-    private fun percentage(progress: Double): Component {
-        val precision = plugin.config.percentageDecimals
-        val pow = 10.0.pow(precision)
-        val percent = progress * 100
-        val roundedPercent = round(min(percent * pow, 100 * pow - 1)) / pow
-        val formatted = String.format("%.${precision}f", roundedPercent)
-        return parseMM("<yellow>$formatted%")
-    }
-
-    private fun progressBar(progress: Double): Component {
-        val length = plugin.config.progressBarLength
-        val filledCount = round(length * progress).toInt()
-        return Component.text("|".repeat(filledCount), NamedTextColor.GREEN).append(
-            Component.text("|".repeat(length - filledCount), NamedTextColor.RED)
-        ).withDefaults()
-    }
-
     private fun currentEnchantItem(index: Int, data: EnchantInfo): ItemButton {
-        val displayItem = data.outputItems.first().clone()
         val passedTime = System.currentTimeMillis() - data.startTime
         val progress = passedTime.toDouble() / data.duration
         val remainingTime = data.duration - passedTime
         if (remainingTime <= 0) return doneEnchantButton(index, data)
-        displayItem.editMeta {
-            it.lore(
-                it.lore().orEmpty().plus(
-                    listOf(
-                        Component.empty(),
-                        percentage(progress).append(Component.text(" - ")).append(time(remainingTime)),
-                        progressBar(progress),
-                    )
-                )
-            )
-        }
+        val displayItem = data.outputItems.first().clone()
+        displayItem.addProgressInfo(progress, remainingTime)
         return ItemButton.create(displayItem) { _ -> }
     }
 
@@ -118,7 +81,7 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
         }
         return ItemButton.create(displayItem) { _ ->
             val items = data.outputItems.map(ItemStack::clone)
-            val newEnchants = concurrentEnchants.updated(index) { null }
+            val newEnchants = concurrentEnchants.updated(index) { null }.dropLastWhile { it == null }
             val newData = this.data.copy(currentEnchants = newEnchants)
             dataManager.setData(player, newData)
             ItemUtils.give(player, *items.toTypedArray())
