@@ -1,5 +1,6 @@
 package gecko10000.geckoanvils.managers
 
+import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.guis.AnvilHomeGUI
 import org.bukkit.Material
@@ -7,27 +8,34 @@ import org.bukkit.Sound
 import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.event.Event
+import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
+import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import redempt.redlib.misc.EventListener
+import org.koin.core.component.inject
 import kotlin.random.Random
 
-class AnvilBlockManager : MyKoinComponent {
+class AnvilBlockManager : Listener, MyKoinComponent {
 
     companion object {
         private const val DAMAGE_PROBABILITY = 0.125
     }
 
+    private val plugin: GeckoAnvils by inject()
+
     init {
-        EventListener(PlayerInteractEvent::class.java, EventPriority.MONITOR) { e ->
-            if (e.useInteractedBlock() == Event.Result.DENY) return@EventListener
-            if (e.action != Action.RIGHT_CLICK_BLOCK) return@EventListener
-            val block = e.clickedBlock ?: return@EventListener
-            if (!Tag.ANVIL.isTagged(block.type)) return@EventListener
-            e.isCancelled = true
-            AnvilHomeGUI(e.player, block)
-        }
+        plugin.server.pluginManager.registerEvents(this, plugin)
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private fun PlayerInteractEvent.onOpenAnvil() {
+        if (useInteractedBlock() == Event.Result.DENY) return
+        if (action != Action.RIGHT_CLICK_BLOCK) return
+        val block = clickedBlock ?: return
+        if (!Tag.ANVIL.isTagged(block.type)) return
+        isCancelled = true
+        AnvilHomeGUI(player, block)
     }
 
     fun isValid(block: Block) = Tag.ANVIL.isTagged(block.type)

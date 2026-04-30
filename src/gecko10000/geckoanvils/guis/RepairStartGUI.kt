@@ -3,8 +3,10 @@ package gecko10000.geckoanvils.guis
 import gecko10000.geckoanvils.DurationUtils
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.RepairCombineManager
 import gecko10000.geckolib.extensions.MM
 import gecko10000.geckolib.extensions.parseMM
+import gecko10000.geckolib.inventorygui.InventoryGUI
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -12,7 +14,6 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
-import redempt.redlib.inventorygui.InventoryGUI
 import kotlin.math.max
 import kotlin.time.Duration
 
@@ -27,6 +28,7 @@ class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoc
     }
 
     private val plugin: GeckoAnvils by inject()
+    private val repairCombineManager: RepairCombineManager by inject()
 
     private var itemToRepair: ItemStack?
         get() = inventory.inventory.getItem(DAMAGED_ITEM_SLOT)

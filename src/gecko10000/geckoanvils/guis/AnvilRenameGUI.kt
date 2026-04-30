@@ -6,6 +6,8 @@ import gecko10000.geckoanvils.managers.AnvilBlockManager
 import gecko10000.geckolib.extensions.isEmpty
 import gecko10000.geckolib.extensions.name
 import gecko10000.geckolib.extensions.withDefaults
+import gecko10000.geckolib.misc.EventListener
+import gecko10000.geckolib.misc.Task
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
@@ -21,8 +23,6 @@ import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.MenuType
 import org.bukkit.inventory.view.AnvilView
 import org.koin.core.component.inject
-import redempt.redlib.misc.EventListener
-import redempt.redlib.misc.Task
 
 @Suppress("UnstableApiUsage")
 class AnvilRenameGUI(private val player: Player, private val block: Block) : InventoryHolder, MyKoinComponent {
@@ -116,10 +116,11 @@ class AnvilRenameGUI(private val player: Player, private val block: Block) : Inv
             }
             view.repairCost = if (isSimple) plugin.config.simpleRenameCost else plugin.config.coloredRenameCost
         }
-        EventListener(InventoryCloseEvent::class.java) { l, e ->
+        var l: EventListener<InventoryCloseEvent>? = null
+        l = EventListener(InventoryCloseEvent::class.java) { e ->
             if (e.inventory == inventory) {
                 listeners.forEach { it.unregister() }
-                l.unregister()
+                l!!.unregister()
             }
         }
     }

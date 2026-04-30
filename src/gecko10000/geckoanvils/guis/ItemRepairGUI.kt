@@ -10,6 +10,10 @@ import gecko10000.geckoanvils.model.RepairInfo
 import gecko10000.geckolib.extensions.extend
 import gecko10000.geckolib.extensions.parseMM
 import gecko10000.geckolib.extensions.updated
+import gecko10000.geckolib.inventorygui.InventoryGUI
+import gecko10000.geckolib.inventorygui.ItemButton
+import gecko10000.geckolib.misc.ItemUtils
+import gecko10000.geckolib.misc.Task
 import kotlinx.coroutines.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -18,10 +22,6 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
-import redempt.redlib.inventorygui.InventoryGUI
-import redempt.redlib.inventorygui.ItemButton
-import redempt.redlib.itemutils.ItemUtils
-import redempt.redlib.misc.Task
 import kotlin.math.min
 
 class ItemRepairGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {

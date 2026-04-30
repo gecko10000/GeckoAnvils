@@ -8,6 +8,9 @@ import gecko10000.geckoanvils.managers.DataManager
 import gecko10000.geckoanvils.managers.EnchantCombineManager
 import gecko10000.geckoanvils.model.EnchantInfo
 import gecko10000.geckolib.extensions.*
+import gecko10000.geckolib.inventorygui.InventoryGUI
+import gecko10000.geckolib.inventorygui.ItemButton
+import gecko10000.geckolib.misc.Task
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -15,9 +18,6 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
-import redempt.redlib.inventorygui.InventoryGUI
-import redempt.redlib.inventorygui.ItemButton
-import redempt.redlib.misc.Task
 import kotlin.time.Duration
 
 class EnchantStartGUI(player: Player, block: Block, private val index: Int) : MyKoinComponent,
@@ -115,7 +115,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
 
     private fun updateInventory(gui: InventoryGUI = inventory) {
         val inputs = gui.openSlots.sorted().mapNotNull { gui.inventory.getItem(it) }
-        result = enchantCombineManager.calculateCombination(inputs)
+        result = enchantCombineManager.calculateCombination(player, inputs)
         gui.inventory.setItem(XP_COST_SLOT, levelCostItem(result.levelCost))
         gui.inventory.setItem(OUTPUT_SLOT, result.output?.firstOrNull() ?: noOutputItem)
         gui.inventory.setItem(TIME_SLOT, timeItem(result.time))

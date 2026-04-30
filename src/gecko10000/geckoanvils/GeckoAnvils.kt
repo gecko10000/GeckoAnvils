@@ -22,6 +22,7 @@ class GeckoAnvils : JavaPlugin(), MyKoinComponent {
 
     override fun onEnable() {
         MyKoinContext.init(this)
+        CommandHandler().register()
     }
 
     override fun onDisable() {

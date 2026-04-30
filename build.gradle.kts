@@ -1,8 +1,9 @@
 plugins {
-    kotlin("jvm") version "2.0.21"
-    kotlin("plugin.serialization") version "1.4.20"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm") version "2.3.10"
+    kotlin("plugin.serialization") version "2.3.10"
+    id("com.gradleup.shadow") version "9.4.1"
     id("de.eldoria.plugin-yml.bukkit") version "0.6.0"
+    kotlin("kapt") version "2.3.10"
 }
 
 sourceSets {
@@ -27,16 +28,20 @@ bukkit {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://redempt.dev/")
+    maven("https://repo.nexomc.com/releases")
+    maven("https://eldonexus.de/repository/maven-public/")
+    mavenLocal()
 }
 
 dependencies {
-    compileOnly(kotlin("stdlib", version = "2.0.21"))
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    compileOnly("gecko10000.geckolib:GeckoLib:1.0-SNAPSHOT")
+    compileOnly(kotlin("stdlib", version = "2.3.10"))
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("gecko10000.geckolib:GeckoLib:1.1")
+    compileOnly("net.strokkur.commands:annotations-paper:2.0.2")
+    kapt("net.strokkur.commands:processor-paper:2.0.2")
 }
 
 kotlin {
@@ -49,13 +54,8 @@ tasks {
     }
 }
 
-
-tasks.register("update") {
+// simple script to sync the plugin to my test server
+tasks.register("update", Exec::class) {
     dependsOn(tasks.build)
-    doLast {
-        exec {
-            workingDir(".")
-            commandLine("../../dot/local/bin/update.sh")
-        }
-    }
+    commandLine("../../dot/local/bin/update.sh")
 }

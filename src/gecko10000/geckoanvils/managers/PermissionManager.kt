@@ -2,7 +2,6 @@ package gecko10000.geckoanvils.managers
 
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.koin.core.component.inject
 
@@ -11,6 +10,8 @@ class PermissionManager : MyKoinComponent {
     companion object {
         private const val ENCHANT_COUNT_PREFIX = "geckoanvils.enchant.slots."
         private const val REPAIR_COUNT_PREFIX = "geckoanvils.repair.slots."
+
+        // Set as 0.05 for 5% speedup
         private const val ENCHANT_SPEEDUP_PREFIX = "geckoanvils.enchant.speedup."
         private const val REPAIR_SPEEDUP_PREFIX = "geckoanvils.repair.speedup."
     }
@@ -25,7 +26,7 @@ class PermissionManager : MyKoinComponent {
             ENCHANT_SPEEDUP_PREFIX,
             REPAIR_SPEEDUP_PREFIX,
         )) {
-            Bukkit.getConsoleSender().hasPermission(prefix)
+            plugin.server.consoleSender.hasPermission(prefix)
         }
     }
 

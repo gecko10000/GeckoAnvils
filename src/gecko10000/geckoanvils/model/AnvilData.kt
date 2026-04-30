@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AnvilData(
-    val currentEnchants: List<EnchantInfo?>,
-    val currentRepairs: List<RepairInfo?>,
+    val currentEnchants: List<EnchantInfo?> = emptyList(),
+    val currentRepairs: List<RepairInfo?> = emptyList(),
 )

@@ -2,7 +2,7 @@ package gecko10000.geckoanvils.guis
 
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.AnvilBlockManager
-import gecko10000.geckolib.GUI
+import gecko10000.geckolib.inventorygui.GUI
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.koin.core.component.inject

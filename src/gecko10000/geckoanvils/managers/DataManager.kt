@@ -3,6 +3,8 @@ package gecko10000.geckoanvils.managers
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.model.AnvilData
+import gecko10000.geckolib.misc.EventListener
+import gecko10000.geckolib.misc.Task
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.bukkit.Bukkit
@@ -11,8 +13,6 @@ import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.persistence.PersistentDataType
 import org.koin.core.component.inject
-import redempt.redlib.misc.EventListener
-import redempt.redlib.misc.Task
 import java.util.*
 
 class DataManager : MyKoinComponent {
@@ -38,10 +38,7 @@ class DataManager : MyKoinComponent {
 
     private fun loadData(player: Player): AnvilData {
         val dataString = player.persistentDataContainer.get(dataKey, PersistentDataType.STRING)
-        val data = dataString?.let { json.decodeFromString(it) } ?: AnvilData(
-            currentEnchants = listOf(),
-            currentRepairs = listOf()
-        )
+        val data = if (dataString == null) AnvilData() else json.decodeFromString(dataString)
         anvilData[player.uniqueId] = data
         return data
     }
