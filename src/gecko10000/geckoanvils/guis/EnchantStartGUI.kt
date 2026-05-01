@@ -6,6 +6,7 @@ import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.AnvilBlockManager
 import gecko10000.geckoanvils.managers.DataManager
 import gecko10000.geckoanvils.managers.EnchantCombineManager
+import gecko10000.geckoanvils.managers.PermissionManager
 import gecko10000.geckoanvils.model.EnchantInfo
 import gecko10000.geckolib.extensions.*
 import gecko10000.geckolib.inventorygui.InventoryGUI
@@ -34,6 +35,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
     private val anvilBlockManager: AnvilBlockManager by inject()
     private val dataManager: DataManager by inject()
     private val enchantCombineManager: EnchantCombineManager by inject()
+    private val permissionManager: PermissionManager by inject()
 
     private var result: EnchantCombineManager.CalcResult = EnchantCombineManager.CalcResult.EMPTY
 
@@ -42,6 +44,8 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
             it.displayName(parseMM("<red>No Result!"))
         }
     }
+
+    private fun getSpeedup() = permissionManager.getEnchantTimeSpeedup(player)
 
     private fun levelCostItem(cost: Int): ItemStack {
         val item = ItemStack.of(Material.EXPERIENCE_BOTTLE)
@@ -54,21 +58,30 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
     }
 
     private fun timeItem(time: Duration): ItemStack {
+        val speedup = getSpeedup()
         val item = ItemStack.of(Material.CLOCK)
         item.editMeta {
-            it.displayName(parseMM("<dark_aqua>Time: ${DurationUtils.format(time)}"))
+            if (speedup == 1.0 || time == Duration.ZERO) {
+                it.displayName(parseMM("<dark_aqua>Time: <aqua><b>${DurationUtils.format(time)}"))
+            } else {
+                val original = DurationUtils.format(time)
+                val actual = DurationUtils.format(time / speedup)
+                it.displayName(parseMM("<dark_aqua>Time: <aqua><b>$actual</b><dark_aqua> (<green>${speedup}x</green> speedup)"))
+                it.lore(listOf(parseMM("<dark_aqua>Original: <red>$original")))
+            }
         }
         return item
     }
 
     private fun validConfirmButton(): ItemButton {
         val item = ItemStack.of(Material.LIME_STAINED_GLASS_PANE)
+        val actualTime = result.baseTime / getSpeedup()
         item.editMeta {
             it.displayName(parseMM("<green>Confirm"))
             it.lore(
                 listOf(
-                    parseMM("<red>This will cost <u>${result.levelCost} levels"),
-                    parseMM("<red>and take <u>${DurationUtils.format(result.time)}</u>.")
+                    parseMM("<red>This will cost <yellow><u>${result.levelCost} levels</yellow>"),
+                    parseMM("<red>and take <aqua><u>${DurationUtils.format(actualTime)}</u></aqua>.")
                 )
             )
         }
@@ -84,7 +97,7 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
                 EnchantInfo(
                     inventory.openSlots.sorted().mapNotNull { inventory.inventory.getItem(it) },
                     startTime = System.currentTimeMillis(),
-                    duration = result.time.inWholeMilliseconds,
+                    duration = actualTime.inWholeMilliseconds,
                     outputItems = result.output!!,
                 )
             }
@@ -115,10 +128,10 @@ class EnchantStartGUI(player: Player, block: Block, private val index: Int) : My
 
     private fun updateInventory(gui: InventoryGUI = inventory) {
         val inputs = gui.openSlots.sorted().mapNotNull { gui.inventory.getItem(it) }
-        result = enchantCombineManager.calculateCombination(player, inputs)
+        result = enchantCombineManager.calculateCombination(inputs)
         gui.inventory.setItem(XP_COST_SLOT, levelCostItem(result.levelCost))
         gui.inventory.setItem(OUTPUT_SLOT, result.output?.firstOrNull() ?: noOutputItem)
-        gui.inventory.setItem(TIME_SLOT, timeItem(result.time))
+        gui.inventory.setItem(TIME_SLOT, timeItem(result.baseTime))
         gui.addButton(SIZE - 1, confirmButton())
     }
 

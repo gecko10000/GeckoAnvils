@@ -6,7 +6,6 @@ import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemEnchantments
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
 import kotlin.math.*
@@ -61,21 +60,21 @@ class EnchantCombineManager : MyKoinComponent {
         return rawAmount.toInt()
     }
 
-    private fun calcDisenchantTime(player: Player, enchantsToRemove: Map<Enchantment, Int>): Duration {
+    private fun calcDisenchantTime(enchantsToRemove: Map<Enchantment, Int>): Duration {
         var overMaxPenalty = 1.0
         for ((enchant, level) in enchantsToRemove) {
             val levelsOverMax = max(0, level - enchant.maxLevel)
             overMaxPenalty += 2.0.pow(levelsOverMax) + level.toDouble() / enchant.maxLevel
         }
         val rawDuration = plugin.config.baseDisenchantDuration * overMaxPenalty
-        return rawDuration / permissionManager.getEnchantTimeSpeedup(player)
+        return rawDuration
     }
 
     /**
      * Attempts to calculate the disenchantment result
      * when an enchanted item and a book are given.
      */
-    private fun getDisenchantResult(player: Player, input: List<ItemStack>): CalcResult? {
+    private fun getDisenchantResult(input: List<ItemStack>): CalcResult? {
         // Needs to be just an item and a book
         if (input.size != 2) return null
         // One of the items is a book
@@ -100,11 +99,11 @@ class EnchantCombineManager : MyKoinComponent {
         }
 
         val levelCost = calcDisenchantLevelCost(enchantsToRemove)
-        val time = calcDisenchantTime(player, enchantsToRemove)
+        val time = calcDisenchantTime(enchantsToRemove)
         return CalcResult(
             listOf(outputBook, otherItem),
             levelCost = levelCost,
-            time = time,
+            baseTime = time,
         )
     }
 
@@ -240,7 +239,7 @@ class EnchantCombineManager : MyKoinComponent {
      *
      * TODO: make the 25 configurable
      */
-    private fun getCombineTime(player: Player, outputItem: ItemStack): Duration {
+    private fun getCombineTime(outputItem: ItemStack): Duration {
         var duration = Duration.ZERO
         val enchants = outputItem.properEnchants()
         for ((enchant, level) in enchants) {
@@ -254,15 +253,15 @@ class EnchantCombineManager : MyKoinComponent {
             duration += enchantDur
         }
         duration *= (log2(enchants.size + 1.toDouble()) + 1) / 2
-        return duration / permissionManager.getEnchantTimeSpeedup(player)
+        return duration
     }
 
     /**
      * Calculates enchantment upgrades and which enchantments
      * to apply. Returns the calculation's result, if any.
      */
-    fun calculateCombination(player: Player, inputs: List<ItemStack>): CalcResult {
-        val disenchantResult = getDisenchantResult(player, inputs)
+    fun calculateCombination(inputs: List<ItemStack>): CalcResult {
+        val disenchantResult = getDisenchantResult(inputs)
         if (disenchantResult != null) return disenchantResult
         val outputItem = getBaseOutputItem(inputs) ?: return CalcResult.EMPTY
         val outputEnchants = getOutputEnchants(inputs)
@@ -272,18 +271,19 @@ class EnchantCombineManager : MyKoinComponent {
         val newItem = applyEnchants(combinedDurability, validEnchants)
         if (inputs.any { it.isSimilar(newItem) }) return CalcResult.EMPTY
         val levelCost = getCombineLevelCost(newItem)
-        val time = getCombineTime(player, newItem)
+        val time = getCombineTime(newItem)
         return CalcResult(listOf(newItem), levelCost, time)
     }
 
     data class CalcResult(
         val output: List<ItemStack>?,
         val levelCost: Int,
-        val time: Duration,
+        val baseTime: Duration,
     ) {
         companion object {
             val EMPTY = CalcResult(null, 0, Duration.ZERO)
         }
+
     }
 
 }
