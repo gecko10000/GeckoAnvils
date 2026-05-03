@@ -15,6 +15,8 @@ import gecko10000.geckolib.inventorygui.ItemButton
 import gecko10000.geckolib.misc.ItemUtils
 import gecko10000.geckolib.misc.Task
 import kotlinx.coroutines.*
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -85,6 +87,10 @@ class EnchantGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociate
             val newData = this.data.copy(currentEnchants = newEnchants)
             dataManager.setData(player, newData)
             ItemUtils.give(player, *items.toTypedArray())
+            player.playSound(
+                Sound.sound(Key.key("block.anvil.use"), Sound.Source.BLOCK, 1f, 1f),
+                Sound.Emitter.self()
+            )
             EnchantGUI(player, block)
         }
     }

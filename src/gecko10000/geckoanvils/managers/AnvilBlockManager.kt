@@ -3,8 +3,9 @@ package gecko10000.geckoanvils.managers
 import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.guis.AnvilHomeGUI
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
 import org.bukkit.Material
-import org.bukkit.Sound
 import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.event.Event
@@ -51,8 +52,10 @@ class AnvilBlockManager : Listener, MyKoinComponent {
         }
         if (willBeDamaged) block.type = newType
         if (playSound) {
-            val sound = if (willBreak) Sound.BLOCK_ANVIL_BREAK else Sound.BLOCK_ANVIL_USE
-            block.world.playSound(block.location.toCenterLocation(), sound, 1f, 1f)
+            val soundKey = "block.anvil." + if (willBreak) "destroy" else "use"
+            val sound = Sound.sound(Key.key(soundKey), Sound.Source.BLOCK, 1f, 2f)
+            val loc = block.location
+            block.world.playSound(sound, loc.x + 0.5, loc.y + 0.5, loc.z + 0.5)
         }
     }
 
