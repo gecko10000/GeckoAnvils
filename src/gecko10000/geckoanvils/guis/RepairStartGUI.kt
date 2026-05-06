@@ -2,11 +2,18 @@ package gecko10000.geckoanvils.guis
 
 import gecko10000.geckoanvils.DurationUtils
 import gecko10000.geckoanvils.GeckoAnvils
+import gecko10000.geckoanvils.config.RepairEntry
 import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckoanvils.managers.AnvilBlockManager
 import gecko10000.geckoanvils.managers.RepairCombineManager
 import gecko10000.geckolib.extensions.MM
+import gecko10000.geckolib.extensions.isEmpty
 import gecko10000.geckolib.extensions.parseMM
+import gecko10000.geckolib.extensions.withDefaults
 import gecko10000.geckolib.inventorygui.InventoryGUI
+import gecko10000.geckolib.inventorygui.ItemButton
+import gecko10000.geckolib.misc.Task
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -15,58 +22,151 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.time.Duration
 
 class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
 
     companion object {
-        private const val SIZE = 27
-        private const val DAMAGED_ITEM_SLOT = 10
-        private const val REPAIR_ITEM_SLOT = 12
-        private const val TIME_SLOT = 14
+        private const val SIZE = 36
+        private const val INPUT_ITEM_SLOT = 10
+        private const val REPAIR_ITEM_SLOT = 13
         private const val RESULT_SLOT = 16
+        private const val TIME_SLOT = 7
+        private const val CONFIRM_SLOT = 25
+        private val INGREDIENT_SUGGESTION_SLOTS = listOf(30, 31, 32)
+        private val INPUT_HIGHLIGHT_ITEM = ItemStack.of(Material.CYAN_STAINED_GLASS_PANE)
+            .also { it.editMeta { it.itemName(parseMM("<dark_aqua>Item to Repair")) } }
+        private val REPAIR_HIGHLIGHT_ITEM = ItemStack.of(Material.YELLOW_STAINED_GLASS_PANE)
+            .also { it.editMeta { it.itemName(parseMM("<yellow>Material to Repair With")) } }
     }
 
     private val plugin: GeckoAnvils by inject()
+    private val anvilBlockManager: AnvilBlockManager by inject()
     private val repairCombineManager: RepairCombineManager by inject()
 
     private var itemToRepair: ItemStack?
-        get() = inventory.inventory.getItem(DAMAGED_ITEM_SLOT)
-        set(value) = inventory.inventory.setItem(DAMAGED_ITEM_SLOT, value)
+        get() = inventory.inventory.getItem(INPUT_ITEM_SLOT)
+        set(value) = inventory.inventory.setItem(INPUT_ITEM_SLOT, value)
     private var sacrificedItem: ItemStack?
         get() = inventory.inventory.getItem(REPAIR_ITEM_SLOT)
         set(value) = inventory.inventory.setItem(REPAIR_ITEM_SLOT, value)
-    private var duration: Duration? = null
+    private var result: RepairCombineManager.CalcResult? = null
 
     private fun timeItem(duration: Duration): ItemStack {
         val item = ItemStack.of(Material.CLOCK, max(1, duration.inWholeHours.toInt()))
         item.editMeta {
-            it.displayName(parseMM("<gold>Repair will take"))
-            it.lore(
-                listOf(
-                    MM.deserialize(
-                        "<!i><yellow><time>",
-                        Placeholder.unparsed("time", DurationUtils.format(duration))
-                    )
-                )
+            it.displayName(parseMM("<dark_aqua>Time: <aqua><b>${DurationUtils.format(duration)}</b></aqua>"))
+        }
+        return item
+    }
+
+    private fun repairEntryItem(repairEntry: RepairEntry): ItemStack {
+        val materials = repairEntry.matchedMaterials.materials.toList()
+        val item = ItemStack.of(materials[0])
+        item.editMeta { meta ->
+            val otherOptions = materials.subList(1, materials.size)
+            val otherOptionComponents = otherOptions.map {
+                MM.deserialize(
+                    "<dark_aqua>or</dark_aqua> <material>",
+                    Placeholder.component("material", Component.translatable(it.translationKey()))
+                ).withDefaults()
+            }
+            meta.lore(
+                otherOptionComponents
+                    .plus(Component.empty())
+                    .plus(parseMM("<yellow>+${repairEntry.baseRepairAmount} durability"))
+                    .plus(parseMM("<gold>+${repairEntry.cleanMaxDurabilityIncrease()} max durability"))
             )
         }
         return item
     }
 
-    private fun updateInventory(gui: InventoryGUI = this.inventory) {
-        gui.inventory.setItem(TIME_SLOT, duration?.let { timeItem(it) } ?: FILLER)
-        gui.inventory.setItem(RESULT_SLOT, null)
+    private fun resultItem(inventory: InventoryGUI): ItemStack? {
+        val itemToRepair = inventory.inventory.getItem(INPUT_ITEM_SLOT)
+        val sacrificedItem = inventory.inventory.getItem(REPAIR_ITEM_SLOT)
+        if (itemToRepair.isEmpty() || sacrificedItem.isEmpty()) {
+            this.result = null
+            return null
+        }
+        itemToRepair!!; sacrificedItem!!
+        this.result = repairCombineManager.calculateCombination(itemToRepair, sacrificedItem)
+        val displayedItem = result!!.output?.clone() ?: return null
+        displayedItem.lore(
+            (displayedItem.lore() ?: emptyList())
+                .plus(Component.empty())
+                .plus(parseMM("<yellow>+${result!!.gainedDurability} durability"))
+                .plus(parseMM("<gold>+${result!!.gainedMaxDurability} max durability"))
+        )
+        return displayedItem
+    }
+
+    private fun confirmButton(): ItemButton? {
+        val type = this.block.type
+        if (!type.name.endsWith("ANVIL")) {
+            val item = ItemStack.of(Material.BARRIER)
+            item.editMeta {
+                it.itemName(parseMM("<red>The anvil is missing, dummy..."))
+            }
+            return ItemButton.create(item) {}
+        }
+        val item = ItemStack.of(type)
+        val result = this.result ?: return null
+        val sacrificedItem = this.sacrificedItem ?: return null
+        item.editMeta {
+            it.itemName(parseMM("<green>Confirm"))
+            it.lore(
+                listOf(
+                    MM.deserialize(
+                        "<red>This will cost <yellow><u><amount> <item>",
+                        Placeholder.unparsed("amount", sacrificedItem.amount.toString()),
+                        Placeholder.component("item", Component.translatable(sacrificedItem.type.translationKey()))
+                    ).withDefaults(),
+                    MM.deserialize(
+                        "<red>and take <aqua><u><time>",
+                        Placeholder.unparsed("time", DurationUtils.format(result.time))
+                    ).withDefaults()
+                )
+            )
+        }
+        return ItemButton.create(item) { _ ->
+
+        }
+    }
+
+    private fun updateInventory(inventory: InventoryGUI = this.inventory) {
+        val itemToRepair = inventory.inventory.getItem(INPUT_ITEM_SLOT)
+        val repairEntries = plugin.repairConfig.repairs[itemToRepair?.type]
+        INGREDIENT_SUGGESTION_SLOTS.forEach { inventory.inventory.setItem(it, FILLER) }
+        if (repairEntries != null) {
+            for (i in 0..<min(repairEntries.size, INGREDIENT_SUGGESTION_SLOTS.size)) {
+                inventory.inventory.setItem(INGREDIENT_SUGGESTION_SLOTS[i], repairEntryItem(repairEntries[i]))
+            }
+        }
+        val resultItem = resultItem(inventory)
+        inventory.inventory.setItem(RESULT_SLOT, resultItem)
+        inventory.inventory.setItem(TIME_SLOT, result?.time?.let { timeItem(it) } ?: FILLER)
+        val confirmButton = confirmButton()
+        if (confirmButton == null) {
+            inventory.getButton(CONFIRM_SLOT)?.let(inventory::removeButton)
+            inventory.inventory.setItem(CONFIRM_SLOT, FILLER)
+        } else {
+            inventory.addButton(CONFIRM_SLOT, confirmButton)
+        }
     }
 
     override fun createInventory(): InventoryGUI {
         val inventory = InventoryGUI(Bukkit.createInventory(this, SIZE, plugin.config.repairStartName))
         inventory.fill(0, SIZE, FILLER)
-        for (slot in setOf(DAMAGED_ITEM_SLOT, REPAIR_ITEM_SLOT)) {
+        inventory.fill(0, 0, 3, 3, INPUT_HIGHLIGHT_ITEM)
+        inventory.fill(3, 0, 6, 3, REPAIR_HIGHLIGHT_ITEM)
+        for (slot in setOf(INPUT_ITEM_SLOT, REPAIR_ITEM_SLOT)) {
             inventory.inventory.setItem(slot, null)
             inventory.openSlot(slot)
         }
         inventory.addButton(SIZE - 9, BACK { ItemRepairGUI(player, block) })
+        inventory.setOnClickOpenSlot { _ -> Task.syncDelayed { -> updateInventory() } }
+        inventory.setOnDragOpenSlot { _ -> Task.syncDelayed { -> updateInventory() } }
         updateInventory(inventory)
         return inventory
     }
