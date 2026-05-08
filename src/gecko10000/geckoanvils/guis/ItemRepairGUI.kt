@@ -15,6 +15,8 @@ import gecko10000.geckolib.inventorygui.ItemButton
 import gecko10000.geckolib.misc.ItemUtils
 import gecko10000.geckolib.misc.Task
 import kotlinx.coroutines.*
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -44,13 +46,13 @@ class ItemRepairGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoci
         }
     }
 
-    private fun emptySlotButton(): ItemButton {
+    private fun emptySlotButton(index: Int): ItemButton {
         val item = ItemStack.of(Material.LIME_STAINED_GLASS_PANE)
         item.editMeta {
             it.displayName(parseMM("<gray>(<green>+</green>) <dark_green>Start Repair"))
         }
         return ItemButton.create(item) { _ ->
-            RepairStartGUI(player, block)
+            RepairStartGUI(player, block, index)
         }
     }
 
@@ -82,14 +84,18 @@ class ItemRepairGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoci
             val newData = this.data.copy(currentRepairs = newRepairs)
             dataManager.setData(player, newData)
             ItemUtils.give(player, item)
-            EnchantGUI(player, block)
+            ItemRepairGUI(player, block)
+            player.playSound(
+                Sound.sound(Key.key("block.anvil.use"), Sound.Source.BLOCK, 1f, 1f),
+                Sound.Emitter.self()
+            )
         }
     }
 
     private fun updateInventory(gui: InventoryGUI = this.inventory) {
         for (i in concurrentRepairs.indices) {
             val info = concurrentRepairs[i]
-            val button = if (info == null) emptySlotButton() else inRepairItem(i, info)
+            val button = if (info == null) emptySlotButton(i) else inRepairItem(i, info)
             gui.addButton(i, button)
         }
     }

@@ -5,7 +5,7 @@ import gecko10000.geckoanvils.di.MyKoinComponent
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 @Suppress("UnstableApiUsage")
 class RepairCombineManager : MyKoinComponent {
@@ -13,7 +13,7 @@ class RepairCombineManager : MyKoinComponent {
     private val plugin: GeckoAnvils by inject()
 
     fun calculateCombination(inputItem: ItemStack, repairItem: ItemStack): CalcResult {
-        return CalcResult(inputItem, 50, 5, 1.minutes)
+        return CalcResult(inputItem, 50, 5, 10.seconds) // your stub, sir
     }
 
     data class CalcResult(

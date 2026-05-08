@@ -5,11 +5,10 @@ import gecko10000.geckoanvils.GeckoAnvils
 import gecko10000.geckoanvils.config.RepairEntry
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.AnvilBlockManager
+import gecko10000.geckoanvils.managers.DataManager
 import gecko10000.geckoanvils.managers.RepairCombineManager
-import gecko10000.geckolib.extensions.MM
-import gecko10000.geckolib.extensions.isEmpty
-import gecko10000.geckolib.extensions.parseMM
-import gecko10000.geckolib.extensions.withDefaults
+import gecko10000.geckoanvils.model.RepairInfo
+import gecko10000.geckolib.extensions.*
 import gecko10000.geckolib.inventorygui.InventoryGUI
 import gecko10000.geckolib.inventorygui.ItemButton
 import gecko10000.geckolib.misc.Task
@@ -25,7 +24,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration
 
-class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssociatedGUI(player, block) {
+class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyKoinComponent,
+    AnvilAssociatedGUI(player, block) {
 
     companion object {
         private const val SIZE = 36
@@ -44,6 +44,7 @@ class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoc
     private val plugin: GeckoAnvils by inject()
     private val anvilBlockManager: AnvilBlockManager by inject()
     private val repairCombineManager: RepairCombineManager by inject()
+    private val dataManager: DataManager by inject()
 
     private var itemToRepair: ItemStack?
         get() = inventory.inventory.getItem(INPUT_ITEM_SLOT)
@@ -130,7 +131,34 @@ class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoc
             )
         }
         return ItemButton.create(item) { _ ->
+            if (!anvilBlockManager.isValid(block)) {
+                player.closeInventory()
+                return@create
+            }
+            anvilBlockManager.damageAnvil(block)
+            val prevData = dataManager.getData(player)
+            val inputItem = inventory.inventory.getItem(INPUT_ITEM_SLOT)?.clone() ?: return@create
+            val repairItem = inventory.inventory.getItem(REPAIR_ITEM_SLOT) ?: return@create
+            val outputItem = result.output ?: return@create
+            val updatedRepairs = prevData.currentRepairs.extend(null, targetAmount = index + 1).updated(index) {
+                RepairInfo(
+                    inputItem = inputItem,
+                    startTime = System.currentTimeMillis(),
+                    duration = result.time.inWholeMilliseconds,
+                    repairMaterial = repairItem.type,
+                    repairAmount = repairItem.amount,
+                    outputItem = outputItem,
+                )
+            }
+            dataManager.setData(player, prevData.copy(currentRepairs = updatedRepairs))
+            inventory.setReturnsItems(false)
+            ItemRepairGUI(player, block)
+        }
+    }
 
+    private val noRepairItem = ItemStack.of(Material.BARRIER).apply {
+        editMeta {
+            it.displayName(parseMM("<red>Can't be repaired!"))
         }
     }
 
@@ -138,9 +166,13 @@ class RepairStartGUI(player: Player, block: Block) : MyKoinComponent, AnvilAssoc
         val itemToRepair = inventory.inventory.getItem(INPUT_ITEM_SLOT)
         val repairEntries = plugin.repairConfig.repairs[itemToRepair?.type]
         INGREDIENT_SUGGESTION_SLOTS.forEach { inventory.inventory.setItem(it, FILLER) }
-        if (repairEntries != null) {
-            for (i in 0..<min(repairEntries.size, INGREDIENT_SUGGESTION_SLOTS.size)) {
-                inventory.inventory.setItem(INGREDIENT_SUGGESTION_SLOTS[i], repairEntryItem(repairEntries[i]))
+        if (itemToRepair != null) {
+            if (repairEntries != null) {
+                for (i in 0..<min(repairEntries.size, INGREDIENT_SUGGESTION_SLOTS.size)) {
+                    inventory.inventory.setItem(INGREDIENT_SUGGESTION_SLOTS[i], repairEntryItem(repairEntries[i]))
+                }
+            } else {
+                inventory.inventory.setItem(INGREDIENT_SUGGESTION_SLOTS[1], noRepairItem)
             }
         }
         val resultItem = resultItem(inventory)
