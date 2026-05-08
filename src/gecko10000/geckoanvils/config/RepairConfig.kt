@@ -2,6 +2,7 @@ package gecko10000.geckoanvils.config
 
 import kotlinx.serialization.Serializable
 import org.bukkit.Material
+import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class RepairConfig(
@@ -22,7 +23,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(".*_PLANKS"),
                     baseRepairAmount = 25,
-                    maxDurabilityIncrease = 3.0,
+                    maxDurabilityIncrease = 5,
+                    time = 5.minutes,
                 )
             ),
             // Durability similar to wood
@@ -30,7 +32,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.LEATHER),
                     baseRepairAmount = 25,
-                    maxDurabilityIncrease = 5.0,
+                    maxDurabilityIncrease = 5,
+                    time = 5.minutes,
                 )
             ),
             // Default durability: 131
@@ -38,7 +41,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.COBBLESTONE),
                     baseRepairAmount = 50,
-                    maxDurabilityIncrease = 3.0,
+                    maxDurabilityIncrease = 3,
+                    time = 10.minutes,
                 )
             ),
             // Default durability: 190
@@ -46,7 +50,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.COPPER_INGOT),
                     baseRepairAmount = 75,
-                    maxDurabilityIncrease = 6.0,
+                    maxDurabilityIncrease = 6,
+                    time = 10.minutes,
                 )
             ),
             // Default durability: 250
@@ -54,7 +59,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.IRON_INGOT),
                     baseRepairAmount = 90,
-                    maxDurabilityIncrease = 4.0,
+                    maxDurabilityIncrease = 4,
+                    time = 30.minutes,
                 )
             ),
             // Durability same as iron
@@ -62,12 +68,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.IRON_INGOT),
                     baseRepairAmount = 90,
-                    maxDurabilityIncrease = 8.0,
+                    maxDurabilityIncrease = 8,
+                    time = 15.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.IRON_CHAIN),
                     baseRepairAmount = 90,
-                    maxDurabilityIncrease = 12.0,
+                    maxDurabilityIncrease = 12,
+                    time = 20.minutes,
                 )
             ),
             // Default durability: 32
@@ -75,7 +83,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.GOLD_INGOT),
                     baseRepairAmount = 20,
-                    maxDurabilityIncrease = 15.0,
+                    maxDurabilityIncrease = 15,
+                    time = 10.minutes,
                 )
             ),
             // Default durability: 1561
@@ -83,7 +92,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.DIAMOND),
                     baseRepairAmount = 400,
-                    maxDurabilityIncrease = 45.0,
+                    maxDurabilityIncrease = 45,
+                    time = 80.minutes,
                 )
             ),
             // Default durability: 2031
@@ -91,7 +101,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.NETHERITE_INGOT),
                     baseRepairAmount = 500,
-                    maxDurabilityIncrease = 60.0,
+                    maxDurabilityIncrease = 60,
+                    time = 90.minutes,
                 )
             ),
         )
@@ -102,7 +113,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.TURTLE_SCUTE),
                     baseRepairAmount = 100,
-                    maxDurabilityIncrease = 40.0,
+                    maxDurabilityIncrease = 40,
+                    time = 40.minutes,
                 )
             ),
             // 64
@@ -110,12 +122,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.FLINT),
                     baseRepairAmount = 40,
-                    maxDurabilityIncrease = 8.0,
+                    maxDurabilityIncrease = 8,
+                    time = 15.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.IRON_INGOT),
                     baseRepairAmount = 50,
-                    maxDurabilityIncrease = 4.0,
+                    maxDurabilityIncrease = 4,
+                    time = 15.minutes,
                 )
             ),
             // 64
@@ -123,12 +137,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.FEATHER),
                     baseRepairAmount = 30,
-                    maxDurabilityIncrease = 8.0,
+                    maxDurabilityIncrease = 8,
+                    time = 15.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.COPPER_INGOT),
                     baseRepairAmount = 50,
-                    maxDurabilityIncrease = 4.0,
+                    maxDurabilityIncrease = 4,
+                    time = 15.minutes,
                 )
             ),
             // 64
@@ -136,12 +152,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STRING),
                     baseRepairAmount = 40,
-                    maxDurabilityIncrease = 8.0,
+                    maxDurabilityIncrease = 5,
+                    time = 20.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STICK),
                     baseRepairAmount = 20,
-                    maxDurabilityIncrease = 3.0,
+                    maxDurabilityIncrease = 3,
+                    time = 15.minutes,
                 )
             ),
             // 25
@@ -149,17 +167,20 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.CARROT),
                     baseRepairAmount = 20,
-                    maxDurabilityIncrease = 15.0,
+                    maxDurabilityIncrease = 15,
+                    time = 10.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STRING),
                     baseRepairAmount = 15,
-                    maxDurabilityIncrease = 5.0,
+                    maxDurabilityIncrease = 5,
+                    time = 5.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STICK),
                     baseRepairAmount = 10,
-                    maxDurabilityIncrease = 2.5,
+                    maxDurabilityIncrease = 2,
+                    time = 5.minutes,
                 )
             ),
             // 100
@@ -167,17 +188,20 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.WARPED_FUNGUS),
                     baseRepairAmount = 75,
-                    maxDurabilityIncrease = 30.0,
+                    maxDurabilityIncrease = 30,
+                    time = 25.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STRING),
                     baseRepairAmount = 35,
-                    maxDurabilityIncrease = 15.0,
+                    maxDurabilityIncrease = 15,
+                    time = 15.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STICK),
                     baseRepairAmount = 20,
-                    maxDurabilityIncrease = 5.0,
+                    maxDurabilityIncrease = 5,
+                    time = 10.minutes,
                 )
             ),
             // 238
@@ -185,7 +209,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.IRON_INGOT),
                     baseRepairAmount = 100,
-                    maxDurabilityIncrease = 35.0,
+                    maxDurabilityIncrease = 35,
+                    time = 30.minutes,
                 )
             ),
             // 336
@@ -193,12 +218,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(".*_PLANKS"),
                     baseRepairAmount = 30,
-                    maxDurabilityIncrease = 5.0,
+                    maxDurabilityIncrease = 5,
+                    time = 10.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.IRON_INGOT),
                     baseRepairAmount = 150,
-                    maxDurabilityIncrease = 45.0,
+                    maxDurabilityIncrease = 45,
+                    time = 60.minutes,
                 )
             ),
             // 384
@@ -206,12 +233,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STRING),
                     baseRepairAmount = 100,
-                    maxDurabilityIncrease = 25.0,
+                    maxDurabilityIncrease = 25,
+                    time = 25.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STICK),
                     baseRepairAmount = 40,
-                    maxDurabilityIncrease = 10.0,
+                    maxDurabilityIncrease = 10,
+                    time = 10.minutes,
                 )
             ),
             // 250
@@ -219,17 +248,20 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.NAUTILUS_SHELL),
                     baseRepairAmount = 75,
-                    maxDurabilityIncrease = 10.0,
+                    maxDurabilityIncrease = 10,
+                    time = 60.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.HEART_OF_THE_SEA),
                     baseRepairAmount = 200,
-                    maxDurabilityIncrease = 120.0,
+                    maxDurabilityIncrease = 120,
+                    time = 120.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.ECHO_SHARD),
                     baseRepairAmount = 150,
-                    maxDurabilityIncrease = 60.0,
+                    maxDurabilityIncrease = 60,
+                    time = 100.minutes,
                 )
             ),
             // 432
@@ -237,12 +269,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.PHANTOM_MEMBRANE),
                     baseRepairAmount = 150,
-                    maxDurabilityIncrease = 40.0,
+                    maxDurabilityIncrease = 40,
+                    time = 120.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.FEATHER),
                     baseRepairAmount = 30,
-                    maxDurabilityIncrease = 5.0,
+                    maxDurabilityIncrease = 5,
+                    time = 30.minutes,
                 )
             ),
             // 465
@@ -250,17 +284,20 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.IRON_INGOT),
                     baseRepairAmount = 150,
-                    maxDurabilityIncrease = 40.0,
+                    maxDurabilityIncrease = 40,
+                    time = 30.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STRING),
                     baseRepairAmount = 80,
-                    maxDurabilityIncrease = 15.0,
+                    maxDurabilityIncrease = 15,
+                    time = 20.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.STICK),
                     baseRepairAmount = 30,
-                    maxDurabilityIncrease = 5.0,
+                    maxDurabilityIncrease = 5,
+                    time = 10.minutes,
                 )
             ),
             // 500
@@ -268,12 +305,14 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.HEAVY_CORE),
                     baseRepairAmount = 300,
-                    maxDurabilityIncrease = 100.0,
+                    maxDurabilityIncrease = 100,
+                    time = 60.minutes,
                 ),
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.BREEZE_ROD),
                     baseRepairAmount = 75,
-                    maxDurabilityIncrease = 15.0,
+                    maxDurabilityIncrease = 15,
+                    time = 25.minutes,
                 )
             ),
             // 64
@@ -281,7 +320,8 @@ data class RepairConfig(
                 RepairEntry(
                     matchedMaterials = RegexMaterialPredicate(Material.ARMADILLO_SCUTE),
                     baseRepairAmount = 20,
-                    maxDurabilityIncrease = 5.0,
+                    maxDurabilityIncrease = 5,
+                    time = 10.minutes,
                 )
             ),
         )
@@ -289,13 +329,15 @@ data class RepairConfig(
         private val DEFAULT_STICK_REPAIR_ENTRY = RepairEntry(
             matchedMaterials = RegexMaterialPredicate(Material.STICK),
             baseRepairAmount = 10,
-            maxDurabilityIncrease = 2.0,
+            maxDurabilityIncrease = 2,
+            time = 10.minutes,
         )
 
         private val DEFAULT_LEATHER_REPAIR_ENTRY = RepairEntry(
             matchedMaterials = RegexMaterialPredicate(Material.LEATHER),
             baseRepairAmount = 15,
-            maxDurabilityIncrease = 2.5,
+            maxDurabilityIncrease = 2,
+            time = 10.minutes,
         )
 
         private val DEFAULT_REPAIR_AMOUNTS: Map<Material, List<RepairEntry>> = buildMap {

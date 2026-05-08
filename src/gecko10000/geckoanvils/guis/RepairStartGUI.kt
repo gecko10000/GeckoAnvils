@@ -12,6 +12,7 @@ import gecko10000.geckolib.extensions.*
 import gecko10000.geckolib.inventorygui.InventoryGUI
 import gecko10000.geckolib.inventorygui.ItemButton
 import gecko10000.geckolib.misc.Task
+import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
@@ -77,7 +78,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
                 otherOptionComponents
                     .plus(Component.empty())
                     .plus(parseMM("<yellow>+${repairEntry.baseRepairAmount} durability"))
-                    .plus(parseMM("<gold>+${repairEntry.cleanMaxDurabilityIncrease()} max durability"))
+                    .plus(parseMM("<gold>+${repairEntry.maxDurabilityIncrease} max durability"))
             )
         }
         return item
@@ -91,13 +92,19 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
             return null
         }
         itemToRepair!!; sacrificedItem!!
-        this.result = repairCombineManager.calculateCombination(itemToRepair, sacrificedItem)
-        val displayedItem = result!!.output?.clone() ?: return null
+        val result = repairCombineManager.calculateCombination(itemToRepair, sacrificedItem)
+        this.result = if (result.output == null) null else result
+        val displayedItem = result.output?.clone() ?: return null
+        val maxDamage = result.output.getData(DataComponentTypes.MAX_DAMAGE)
         displayedItem.lore(
             (displayedItem.lore() ?: emptyList())
                 .plus(Component.empty())
-                .plus(parseMM("<yellow>+${result!!.gainedDurability} durability"))
-                .plus(parseMM("<gold>+${result!!.gainedMaxDurability} max durability"))
+                .plus(parseMM("<yellow>+${result.gainedDurability} durability"))
+                .plus(
+                    parseMM(
+                        "<gold>+${result.gainedMaxDurability} max durability ($maxDamage total)"
+                    )
+                )
         )
         return displayedItem
     }
@@ -125,7 +132,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
                     ).withDefaults(),
                     MM.deserialize(
                         "<red>and take <aqua><u><time>",
-                        Placeholder.unparsed("time", DurationUtils.format(result.time))
+                        Placeholder.unparsed("time", DurationUtils.format(result.baseTime))
                     ).withDefaults()
                 )
             )
@@ -144,14 +151,18 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
                 RepairInfo(
                     inputItem = inputItem,
                     startTime = System.currentTimeMillis(),
-                    duration = result.time.inWholeMilliseconds,
+                    duration = result.baseTime.inWholeMilliseconds,
                     repairMaterial = repairItem.type,
-                    repairAmount = repairItem.amount,
+                    repairAmount = result.materialsUsed,
                     outputItem = outputItem,
                 )
             }
             dataManager.setData(player, prevData.copy(currentRepairs = updatedRepairs))
             inventory.setReturnsItems(false)
+            val amountToReturn = repairItem.amount - result.materialsUsed
+            if (amountToReturn > 0) {
+                player.give(repairItem.asQuantity(amountToReturn))
+            }
             ItemRepairGUI(player, block)
         }
     }
@@ -177,7 +188,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
         }
         val resultItem = resultItem(inventory)
         inventory.inventory.setItem(RESULT_SLOT, resultItem)
-        inventory.inventory.setItem(TIME_SLOT, result?.time?.let { timeItem(it) } ?: FILLER)
+        inventory.inventory.setItem(TIME_SLOT, result?.baseTime?.let { timeItem(it) } ?: FILLER)
         val confirmButton = confirmButton()
         if (confirmButton == null) {
             inventory.getButton(CONFIRM_SLOT)?.let(inventory::removeButton)
