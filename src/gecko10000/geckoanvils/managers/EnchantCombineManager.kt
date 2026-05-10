@@ -248,7 +248,7 @@ class EnchantCombineManager : MyKoinComponent {
             if (level > enchant.maxLevel) {
                 val aboveVanilla = level - enchant.maxLevel
                 val overLevelPenalty = 2.0.pow(aboveVanilla)
-                enchantDur *= overLevelPenalty * 5
+                enchantDur *= overLevelPenalty * 25
             }
             duration += enchantDur
         }

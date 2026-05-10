@@ -12,8 +12,8 @@ import kotlin.time.Duration
 @Serializable
 data class RepairEntry(
     val matchedMaterials: RegexMaterialPredicate,
-    val baseRepairAmount: Int,
-    val maxDurabilityIncrease: Int,
+    val baseRepairAmount: Int = 0,
+    val maxDurabilityIncrease: Int = 0,
     val time: Duration,
 ) {
     companion object {

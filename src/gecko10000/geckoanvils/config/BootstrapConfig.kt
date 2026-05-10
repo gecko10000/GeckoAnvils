@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 data class BootstrapConfig(
     @YamlComment("The values here require a full restart.")
     val removeMending: Boolean = true,
+    val removeUnbreaking: Boolean = true,
 )

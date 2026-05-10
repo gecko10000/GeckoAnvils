@@ -27,6 +27,7 @@ class RepairCombineManager : MyKoinComponent {
      */
     private fun calcMaxPossibleNeededItems(itemDamage: Int, chosenRepair: RepairEntry): Int {
         val damageLostPerItem = chosenRepair.baseRepairAmount - chosenRepair.maxDurabilityIncrease
+        if (damageLostPerItem <= 0) return 99
         return ceil(itemDamage.toDouble() / damageLostPerItem).toInt()
     }
 
@@ -48,13 +49,15 @@ class RepairCombineManager : MyKoinComponent {
         val maxDamageGained = chosenRepair.maxDurabilityIncrease * itemsUsed
         val newMaxDamage = previousMaxDamage + maxDamageGained
         val newDamageAmount = max(0, itemDamageAmount + maxDamageGained - damageRemoved)
-        val actualDamageRemoved = itemDamageAmount - newDamageAmount
+        val prevDurability = previousMaxDamage - itemDamageAmount
+        val newDurability = newMaxDamage - newDamageAmount
+        val gainedDurability = newDurability - prevDurability
         val timeTaken = chosenRepair.time * itemsUsed
         val newItem = inputItem.clone()
         newItem.setData(DataComponentTypes.DAMAGE, newDamageAmount)
         newItem.setData(DataComponentTypes.MAX_DAMAGE, newMaxDamage)
 
-        return CalcResult(newItem, actualDamageRemoved, maxDamageGained, itemsUsed, timeTaken)
+        return CalcResult(newItem, gainedDurability, maxDamageGained, itemsUsed, timeTaken)
     }
 
     data class CalcResult(

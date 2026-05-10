@@ -35,7 +35,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
         private const val RESULT_SLOT = 16
         private const val TIME_SLOT = 7
         private const val CONFIRM_SLOT = 25
-        private val INGREDIENT_SUGGESTION_SLOTS = listOf(30, 31, 32)
+        private val INGREDIENT_SUGGESTION_SLOTS = listOf(30, 31, 32, 33)
         private val INPUT_HIGHLIGHT_ITEM = ItemStack.of(Material.CYAN_STAINED_GLASS_PANE)
             .also { it.editMeta { it.itemName(parseMM("<dark_aqua>Item to Repair")) } }
         private val REPAIR_HIGHLIGHT_ITEM = ItemStack.of(Material.YELLOW_STAINED_GLASS_PANE)
@@ -79,18 +79,25 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
         val item = ItemStack.of(materials[0])
         item.editMeta { meta ->
             val otherOptions = materials.subList(1, materials.size)
-            val otherOptionComponents = otherOptions.map {
-                MM.deserialize(
-                    "<dark_aqua>or</dark_aqua> <material>",
-                    Placeholder.component("material", Component.translatable(it.translationKey()))
-                ).withDefaults()
+            val lore = buildList {
+                addAll(otherOptions.map {
+                    MM.deserialize(
+                        "<dark_aqua>or</dark_aqua> <material>",
+                        Placeholder.component("material", Component.translatable(it.translationKey()))
+                    ).withDefaults()
+                })
+                add(Component.empty())
+                if (repairEntry.baseRepairAmount > 0) {
+                    add(parseMM("<yellow>+${repairEntry.baseRepairAmount} durability"))
+                }
+                if (repairEntry.maxDurabilityIncrease > 0) {
+                    add(parseMM("<gold>+${repairEntry.maxDurabilityIncrease} max durability"))
+                }
+                val originalTime = repairEntry.time
+                val time = originalTime / getSpeedup()
+                add(parseMM("<aqua>${DurationUtils.format(time)} <dark_aqua>each"))
             }
-            meta.lore(
-                otherOptionComponents
-                    .plus(Component.empty())
-                    .plus(parseMM("<yellow>+${repairEntry.baseRepairAmount} durability"))
-                    .plus(parseMM("<gold>+${repairEntry.maxDurabilityIncrease} max durability"))
-            )
+            meta.lore(lore)
         }
         return item
     }
@@ -137,7 +144,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
                 listOf(
                     MM.deserialize(
                         "<red>This will cost <yellow><u><amount> <item>",
-                        Placeholder.unparsed("amount", sacrificedItem.amount.toString()),
+                        Placeholder.unparsed("amount", result.materialsUsed.toString()),
                         Placeholder.component("item", Component.translatable(sacrificedItem.type.translationKey()))
                     ).withDefaults(),
                     MM.deserialize(

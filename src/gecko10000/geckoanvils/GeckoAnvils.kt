@@ -41,6 +41,7 @@ class GeckoAnvils : JavaPlugin(), MyKoinComponent {
 
     fun reloadConfigs() {
         configFile.reload()
+        repairConfigFile.reload()
     }
 
 }
