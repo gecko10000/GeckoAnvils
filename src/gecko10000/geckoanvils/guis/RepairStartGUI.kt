@@ -6,6 +6,7 @@ import gecko10000.geckoanvils.config.RepairEntry
 import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckoanvils.managers.AnvilBlockManager
 import gecko10000.geckoanvils.managers.DataManager
+import gecko10000.geckoanvils.managers.PermissionManager
 import gecko10000.geckoanvils.managers.RepairCombineManager
 import gecko10000.geckoanvils.model.RepairInfo
 import gecko10000.geckolib.extensions.*
@@ -21,7 +22,6 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.koin.core.component.inject
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration
 
@@ -46,6 +46,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
     private val anvilBlockManager: AnvilBlockManager by inject()
     private val repairCombineManager: RepairCombineManager by inject()
     private val dataManager: DataManager by inject()
+    private val permissionManager: PermissionManager by inject()
 
     private var itemToRepair: ItemStack?
         get() = inventory.inventory.getItem(INPUT_ITEM_SLOT)
@@ -55,10 +56,20 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
         set(value) = inventory.inventory.setItem(REPAIR_ITEM_SLOT, value)
     private var result: RepairCombineManager.CalcResult? = null
 
-    private fun timeItem(duration: Duration): ItemStack {
-        val item = ItemStack.of(Material.CLOCK, max(1, duration.inWholeHours.toInt()))
+    private fun getSpeedup() = permissionManager.getEnchantTimeSpeedup(player)
+
+    private fun timeItem(time: Duration): ItemStack {
+        val speedup = getSpeedup()
+        val item = ItemStack.of(Material.CLOCK)
         item.editMeta {
-            it.displayName(parseMM("<dark_aqua>Time: <aqua><b>${DurationUtils.format(duration)}</b></aqua>"))
+            if (speedup == 1.0 || time == Duration.ZERO) {
+                it.displayName(parseMM("<dark_aqua>Time: <aqua><b>${DurationUtils.format(time)}"))
+            } else {
+                val original = DurationUtils.format(time)
+                val actual = DurationUtils.format(time / speedup)
+                it.displayName(parseMM("<dark_aqua>Time: <aqua><b>$actual</b><dark_aqua> (<green>${speedup}x</green> speedup)"))
+                it.lore(listOf(parseMM("<dark_aqua>Original: <red>$original")))
+            }
         }
         return item
     }
@@ -95,16 +106,14 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
         val result = repairCombineManager.calculateCombination(itemToRepair, sacrificedItem)
         this.result = if (result.output == null) null else result
         val displayedItem = result.output?.clone() ?: return null
-        val maxDamage = result.output.getData(DataComponentTypes.MAX_DAMAGE)
+        val maxDamage = result.output.getData(DataComponentTypes.MAX_DAMAGE) ?: result.output.type.maxDurability.toInt()
+        val durability = maxDamage - (result.output.getData(DataComponentTypes.DAMAGE) ?: 0)
         displayedItem.lore(
             (displayedItem.lore() ?: emptyList())
                 .plus(Component.empty())
                 .plus(parseMM("<yellow>+${result.gainedDurability} durability"))
-                .plus(
-                    parseMM(
-                        "<gold>+${result.gainedMaxDurability} max durability ($maxDamage total)"
-                    )
-                )
+                .plus(parseMM("<gold>+${result.gainedMaxDurability} max durability"))
+                .plus(parseMM("<green>Result: $durability / $maxDamage"))
         )
         return displayedItem
     }
@@ -121,6 +130,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
         val item = ItemStack.of(type)
         val result = this.result ?: return null
         val sacrificedItem = this.sacrificedItem ?: return null
+        val actualTime = result.baseTime / getSpeedup()
         item.editMeta {
             it.itemName(parseMM("<green>Confirm"))
             it.lore(
@@ -132,7 +142,7 @@ class RepairStartGUI(player: Player, block: Block, private val index: Int) : MyK
                     ).withDefaults(),
                     MM.deserialize(
                         "<red>and take <aqua><u><time>",
-                        Placeholder.unparsed("time", DurationUtils.format(result.baseTime))
+                        Placeholder.unparsed("time", DurationUtils.format(actualTime))
                     ).withDefaults()
                 )
             )
