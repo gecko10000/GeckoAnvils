@@ -1,8 +1,10 @@
+import net.minecrell.pluginyml.paper.PaperPluginDescription
+
 plugins {
     kotlin("jvm") version "2.3.10"
     kotlin("plugin.serialization") version "2.3.10"
     id("com.gradleup.shadow") version "9.4.1"
-    id("de.eldoria.plugin-yml.bukkit") version "0.6.0"
+    id("de.eldoria.plugin-yml.paper") version "0.9.0"
     kotlin("kapt") version "2.3.10"
 }
 
@@ -20,11 +22,19 @@ sourceSets {
 group = "gecko10000.geckoanvils"
 version = "0.1"
 
-bukkit {
+paper {
     name = "GeckoAnvils"
     main = "$group.$name"
-    apiVersion = "1.13"
-    depend = listOf("GeckoLib")
+    apiVersion = "1.19"
+    bootstrapper = "$group.MendingRemovalBootstrap"
+    bootstrapDependencies {
+        register("GeckoLib")
+    }
+    serverDependencies {
+        register("GeckoLib") {
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+    }
 }
 
 repositories {
